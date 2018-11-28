@@ -5,3 +5,7 @@ unit-test:
 
 auto-test:
 	rg --files -tcsharp | entr make unit-test
+
+build:
+	dotnet build PaymentsSystemExample.UnitTests/PaymentsSystemExample.UnitTests.csproj
+	dotnet build PaymentsSystemExample.Api/payment-system-example.csproj
