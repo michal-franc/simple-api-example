@@ -1,4 +1,7 @@
-.PHONY: unit-tests
+.PHONY: unit-test, auto-test
 
-unit-tests:
+unit-test:
 	dotnet test PaymentsSystemExample.UnitTests/PaymentsSystemExample.UnitTests.csproj
+
+auto-test:
+	rg --files -tcsharp | entr make unit-test
