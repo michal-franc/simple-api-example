@@ -2,6 +2,7 @@
 
 unit-test:
 	dotnet test PaymentsSystemExample.UnitTests/PaymentsSystemExample.UnitTests.csproj
+	dotnet test PaymentsSystemExample.IntegrationTests/PaymentsSystemExample.IntegrationTests.csproj
 
 auto-test:
 	rg --files -tcsharp | entr make unit-test
