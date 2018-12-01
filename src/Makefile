@@ -1,7 +1,9 @@
-.PHONY: unit-test, auto-test
+.PHONY: unit-test, auto-test, integration-test
 
 unit-test:
 	dotnet test PaymentsSystemExample.UnitTests/PaymentsSystemExample.UnitTests.csproj
+
+integration-test:
 	dotnet test PaymentsSystemExample.IntegrationTests/PaymentsSystemExample.IntegrationTests.csproj
 
 auto-test:
