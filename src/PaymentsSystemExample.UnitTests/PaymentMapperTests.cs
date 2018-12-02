@@ -2,15 +2,71 @@ using System;
 using System.Linq;
 using System.Globalization;
 using Xunit;
+using FluentAssertions;
 using PaymentsSystemExample.Domain.Adapters;
 
 namespace PaymentsSystemExample.UnitTests
 {
-
     // Helper class for test so we dont have to write en-GB in all the tests
     public class PaymentMapperJsonGB : PaymentMapperJson
     {
         public PaymentMapperJsonGB(): base("en-GB") {}
+    }
+
+    // I am not validating domain here just checking if this fields are correctly mapped
+    // This kind of test could be handled by json schema
+    // This test could be an overkill but is also usefull to make sure that we follow the contract.
+    public class WhenMappingPaymentStringBasedFields
+    {
+        [Theory]
+        [InlineData("currency", "Currency")]
+        [InlineData("end_to_end_reference", "E2EReference")]
+        [InlineData("numeric_reference", "NumericReference")]
+        [InlineData("payment_id", "Id")]
+        [InlineData("payment_purpose", "Purpose")]
+        [InlineData("payment_scheme", "Scheme")]
+        [InlineData("payment_type", "Type")]
+        [InlineData("reference", "Reference")]
+        [InlineData("scheme_payment_sub_type", "SchemeSubType")]
+        [InlineData("scheme_payment_type", "SchemeType")]
+        public void TheFieldsAreCorrectlyMapped(string sourceField, string targetField)
+        {
+            var sut = new PaymentMapperJsonGB();
+            var expectedValue = "JustARandomValue";
+
+            var testJson = $@"{{
+                'data': [{{
+                    'attributes': {{
+                        '{sourceField}': '{expectedValue}'
+                    }}
+                }}]
+            }}";
+
+            var resultPayment = sut.Map(testJson);
+
+            sut.HasErrors.Should().Be(false);
+            expectedValue.Should().Be(this.GetStringValueUsingFieldName(targetField, resultPayment.First().PaymentInJson));
+        }
+
+        private string GetStringValueUsingFieldName(string fieldName, object obj)
+        {
+            var property = obj.GetType().GetProperty(fieldName);
+
+            // For nicer message in unit tests
+            if(property == null)
+            {
+                throw new Exception($"Property {fieldName} not found in {obj.GetType()}");
+            }
+
+            var value = property.GetValue(obj, null);
+
+            if(value == null)
+            {
+                throw new Exception($"Value for field {fieldName} not found in {obj.GetType()}. Potential mapping problem on JsonProp level.");
+            }
+
+            return value.ToString();
+        }
     }
 
     // Based on the api reference
@@ -28,6 +84,7 @@ namespace PaymentsSystemExample.UnitTests
         {
             var sut = new PaymentMapperJsonGB();
             var expectedDate = "2017-01-18";
+            var expectedFormat = "yyyy-MM-dd";
 
             var testJson = $@"{{
                 'data': [{{
@@ -38,8 +95,9 @@ namespace PaymentsSystemExample.UnitTests
             }}";
 
             var resultPayment = sut.Map(testJson);
-            Assert.Equal(expectedDate, resultPayment.First().ProcessingDate.ToString("yyyy-MM-dd"));
-            Assert.False(sut.HasErrors);
+
+            sut.HasErrors.Should().Be(false);
+            expectedDate.Should().Be(resultPayment.First().PaymentInJson.ProcessingDate.ToString(expectedFormat));
         }
 
         [Fact]
@@ -57,7 +115,7 @@ namespace PaymentsSystemExample.UnitTests
             }}";
 
             var resultPayment = sut.Map(testJson);
-            Assert.True(sut.HasErrors);
+            sut.HasErrors.Should().Be(true);
         }
 
         [Fact]
@@ -75,7 +133,7 @@ namespace PaymentsSystemExample.UnitTests
             }}";
 
             var resultPayment = sut.Map(testJson);
-            Assert.True(sut.HasErrors);
+            sut.HasErrors.Should().Be(true);
         }
     }
 
@@ -100,8 +158,8 @@ namespace PaymentsSystemExample.UnitTests
             }}";
 
             var resultPayment = sut.Map(testJson);
-            Assert.Equal(expectedAmount, resultPayment.First().Amount);
-            Assert.False(sut.HasErrors);
+            expectedAmount.Should().Be(resultPayment.First().PaymentInJson.Amount);
+            sut.HasErrors.Should().Be(false);
         }
 
         [Fact]
@@ -119,7 +177,7 @@ namespace PaymentsSystemExample.UnitTests
             }}";
 
             var resultPayment = sut.Map(testJson);
-            Assert.True(sut.HasErrors);
+            sut.HasErrors.Should().Be(true);
         }
 
         [Fact]
@@ -138,8 +196,8 @@ namespace PaymentsSystemExample.UnitTests
             }}";
 
             var resultPayment = sut.Map(testJson);
-            Assert.False(sut.HasErrors);
-            Assert.Equal(expectedAmount, resultPayment.First().Amount.ToString(CultureInfo.CreateSpecificCulture(testCulture)));
+            sut.HasErrors.Should().Be(false);
+            expectedAmount.Should().Be(resultPayment.First().PaymentInJson.Amount.ToString(CultureInfo.CreateSpecificCulture(testCulture)));
         }
     }
 }

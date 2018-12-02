@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace PaymentsSystemExample.Domain.Adapters
 {
@@ -83,7 +84,9 @@ namespace PaymentsSystemExample.Domain.Adapters
         public string id { get; set; }
         public int version { get; set; }
         public string organisation_id { get; set; }
-        public Attributes attributes { get; set; }
+
+        [JsonProperty("attributes")]
+        public PaymentInJson PaymentInJson { get; set; }
     }
 
     public class RequestRoot
@@ -91,15 +94,63 @@ namespace PaymentsSystemExample.Domain.Adapters
         public List<RequestMetadata> data { get; set; }
     }
 
-    public class ParsedPayment
+    // this will be used to make read only casting + removing Json requirement
+    // Could potentialy moved to separate project that is detailing domain
+    // And json could be moved to project json adapter
+    public interface IPayment
     {
-        public decimal Amount { get; }
-        public DateTime ProcessingDate { get; }
+        string Id { get; }
+        decimal Amount { get; }
+        DateTime ProcessingDate { get; }
+        string Currency { get; }
+        string E2EReference { get; }
+        string NumericReference { get; }
+        string Purpose { get; }
+        string Scheme { get; }
+        string Type { get; }
+        string Reference { get; }
+        string SchemeType { get; }
+        string SchemeSubType { get; }
+    }
 
-        public ParsedPayment(Attributes attributes)
-        {
-            this.Amount = attributes.amount;
-            this.ProcessingDate = attributes.processing_date;
-        }
+    // This is read and write class just for Json.NET be able to write to props
+    // It will be casted to IPayment to hide the setters
+    public class PaymentInJson : IPayment
+    {
+        [JsonProperty("payment_id")]
+        public string Id { get; set; }
+
+        [JsonProperty("amount")]
+        public decimal Amount { get; set; }
+
+        [JsonProperty("processing_date")]
+        public DateTime ProcessingDate { get; set; }
+
+        [JsonProperty("currency")]
+        public string Currency { get; set; }
+
+        [JsonProperty("end_to_end_reference")]
+        public string E2EReference { get; set; }
+
+        [JsonProperty("numeric_reference")]
+        public string NumericReference { get; set; }
+
+        [JsonProperty("payment_purpose")]
+        public string Purpose { get; set; }
+
+        [JsonProperty("payment_scheme")]
+        public string Scheme { get; set; }
+
+        [JsonProperty("payment_type")]
+        public string Type { get; set; }
+
+        [JsonProperty("reference")]
+        public string Reference { get; set; }
+
+        [JsonProperty("scheme_payment_type")]
+        public string SchemeType { get; set; }
+
+        [JsonProperty("scheme_payment_sub_type")]
+        public string SchemeSubType { get; set; }
     }
 }

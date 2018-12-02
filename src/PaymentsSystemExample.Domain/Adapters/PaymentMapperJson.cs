@@ -40,18 +40,9 @@ namespace PaymentsSystemExample.Domain.Adapters
             };
         }
 
-        public IEnumerable<ParsedPayment> Map(string rawJson)
+        public IEnumerable<RequestMetadata> Map(string rawJson)
         {
-            var parsedPayments = new List<ParsedPayment>();
-
-            var rawPayments = JsonConvert.DeserializeObject<RequestRoot>(rawJson, _serializerSettings).data;
-
-            foreach(var rawPayment in rawPayments)
-            {
-                parsedPayments.Add(new ParsedPayment(rawPayment.attributes));
-            }
-
-            return parsedPayments;
+            return JsonConvert.DeserializeObject<RequestRoot>(rawJson, _serializerSettings).data;
         }
     }
 }
