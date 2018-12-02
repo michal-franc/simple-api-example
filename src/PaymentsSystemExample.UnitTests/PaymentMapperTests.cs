@@ -36,6 +36,9 @@ namespace PaymentsSystemExample.UnitTests
         }
     }
 
+
+    // I Would similar FX, Charges informatioon and sender charges test
+    // But omiting it now
     public class WhenParsingParty
     {
         [Theory]

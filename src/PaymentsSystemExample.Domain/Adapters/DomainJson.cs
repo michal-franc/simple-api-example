@@ -4,35 +4,6 @@ using Newtonsoft.Json;
 
 namespace PaymentsSystemExample.Domain.Adapters
 {
-    // Used http://json2csharp.com/ to quickly generate object
-    public class SenderCharge
-    {
-        public string amount { get; set; }
-        public string currency { get; set; }
-    }
-
-    public class ChargesInformation
-    {
-        public string bearer_code { get; set; }
-        public List<SenderCharge> sender_charges { get; set; }
-        public string receiver_charges_amount { get; set; }
-        public string receiver_charges_currency { get; set; }
-    }
-
-    public class Fx
-    {
-        public string contract_reference { get; set; }
-        public string exchange_rate { get; set; }
-        public string original_amount { get; set; }
-        public string original_currency { get; set; }
-    }
-
-    public class Attributes
-    {
-        public ChargesInformation charges_information { get; set; }
-        public Fx fx { get; set; }
-    }
-
     public class RequestMetadata
     {
         public string type { get; set; }
@@ -47,6 +18,42 @@ namespace PaymentsSystemExample.Domain.Adapters
     public class RequestRoot
     {
         public List<RequestMetadata> Data { get; set; }
+    }
+
+    public class SenderCharge
+    {
+        public string Amount { get; set; }
+        public string Currency { get; set; }
+    }
+
+    public class ChargesInformation
+    {
+        [JsonProperty("bearer_code")]
+        public string BearerCode { get; set; }
+
+        [JsonProperty("sender_charges")]
+        public List<SenderCharge> SenderCharges { get; set; }
+
+        [JsonProperty("receiver_charges_amount")]
+        public string ReceiverChargesAmount { get; set; }
+
+        [JsonProperty("receiver_charges_currency")]
+        public string ReceiverChargesCurrency { get; set; }
+    }
+
+    public class Fx
+    {
+        [JsonProperty("contract_reference")]
+        public string ContractReference { get; set; }
+
+        [JsonProperty("exchange_rate")]
+        public string ExchangeRate { get; set; }
+
+        [JsonProperty("original_amount")]
+        public string OriginalAmount { get; set; }
+
+        [JsonProperty("original_currency")]
+        public string OriginalCurency { get; set; }
     }
 
     public class Party
@@ -125,5 +132,10 @@ namespace PaymentsSystemExample.Domain.Adapters
 
         [JsonProperty("debtor_party")]
         public Party Debtor {get; set; }
+
+        public Fx Fx { get; set;}
+
+        [JsonProperty("charges_information")]
+        public ChargesInformation ChargesInformation { get; set;}
     }
 }
