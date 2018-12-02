@@ -209,7 +209,7 @@ namespace PaymentsSystemExample.UnitTests
     // Test mapping here with special rules and validations added to json .net
     // then create a WritePayment class that when leaves the Adapter Layer is transformed to Payment Class that is read only.
     // So that no one can change the class in other layers using it
-    public class WhenMappingPaymentFromJsonTests
+    public class WhenMappingPaymentAmountFromJsonTests
     {
         [Fact]
         public void AndAmountIsValid_ThenReturnPayment_AndNowParsingErrors()
