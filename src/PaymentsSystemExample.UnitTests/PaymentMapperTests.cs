@@ -1,7 +1,10 @@
 using System;
+using System.Linq;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -98,36 +101,100 @@ namespace PaymentsSystemExample.UnitTests
 
     public interface IPaymentMapper
     {
-        RequestMetadata Map(string rawData);
+        //TODO: This is at the moment breaking extensibility
+        RequestRoot Map(string rawData);
     }
 
+    class AmountConverter: JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return (objectType == typeof(decimal) || objectType == typeof(decimal?));
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            JToken token = JToken.Load(reader);
+            if (token.Type == JTokenType.String)
+            {
+                decimal value = default(decimal);
+
+                // Allowing only decimal point here
+                if(Decimal.TryParse(token.ToString(), NumberStyles.AllowDecimalPoint, serializer.Culture, out value))
+                {
+                    return value;
+                }
+
+                throw new JsonSerializationException("Incorrect decimal format: " + token.ToString());
+            }
+
+            if (token.Type == JTokenType.Null && objectType == typeof(decimal?))
+            {
+                return null;
+            }
+
+            throw new JsonSerializationException("Not supported token yype: " + token.Type.ToString());
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    // This has to be singleton injected
     public class PaymentMapperJson : IPaymentMapper
     {
-        public RequestMetadata Map(string rawPayment)
+        // Outside of this class we wont need to change the parsing errors collection -> changing only to enumeration
+        public IEnumerable<string> ParsingErrors => _parsingErrors;
+        public bool HasErrors => _parsingErrors.Count > 0;
+
+        // ICollection removes ability to sort (we wont need sorting in this context so I am hiding this ability)
+        private ICollection<string> _parsingErrors;
+        private JsonSerializerSettings _serializerSettings;
+
+        public PaymentMapperJson(string cultureCode)
         {
-            return JsonConvert.DeserializeObject<RequestRoot>(rawPayment).data[0];
+            _parsingErrors = new List<string>();
+            _serializerSettings = new JsonSerializerSettings
+            { 
+                // I would catch here first basic validations - like timezone in date, amount decimal separator, id not being a guid etc
+                // Things like is this a correct currency code, or number code this would be a more Domain validation
+                // And will be performed on different layer
+                Error = (sender, args) => 
+                {
+                    _parsingErrors.Add(args.ErrorContext.Error.Message);
+                    args.ErrorContext.Handled = true;
+                },
+                Culture = new CultureInfo(cultureCode),
+                // As this is singleton for the global scope maintaned by container I am not worried about creating this objects.
+                Converters = new List<JsonConverter> { new AmountConverter() }
+            };
         }
+
+        public RequestRoot Map(string rawPayment)
+        {
+            return JsonConvert.DeserializeObject<RequestRoot>(rawPayment, _serializerSettings);
+        }
+    }
+
+    // Helper class for test so we dont have to write en-GB in all the tests
+    public class PaymentMapperJsonGB : PaymentMapperJson
+    {
+        public PaymentMapperJsonGB(): base("en-GB") {}
     }
 
     // These raw payment objects - add json to them and keep them internal to different layer
     // Test mapping here with special rules and validations added to json .net
     // then create a WritePayment class that when leaves the Adapter Layer is transformed to Payment Class that is read only.
     // So that no one can change the class in other layers using it
-
     public class WhenMappingPaymentFromJsonTests
     {
-        // sut -> system under test
-        public PaymentMapperJson _sut;
-
-        public WhenMappingPaymentFromJsonTests()
-        {
-            _sut = new PaymentMapperJson();
-        }
-
         [Fact]
-        public void AndAmountIsValid_ThenReturnPaymentWithAmount()
+        public void AndAmountIsValid_ThenParseAmount_AndReturnValidPayment()
         {
-            var expectedAmount = 100.21m;
+            var sut = new PaymentMapperJsonGB();
+            var expectedAmount = "100.21";
 
             var testJson = $@"{{
                 'data': [{{
@@ -137,13 +204,14 @@ namespace PaymentsSystemExample.UnitTests
                 }}]
             }}";
 
-            var resultPayment = _sut.Map(testJson);
-            Assert.Equal(expectedAmount, resultPayment.attributes.amount);
+            var root = sut.Map(testJson);
+            Assert.Equal(expectedAmount, root.data[0].attributes.amount.ToString());
         }
 
         [Fact]
-        public void AndInvalidDecimalPoint_ThenReturnNull_and_ParsingErrors()
+        public void AndInvalidDecimalSeparator_ThenReturnNotValidPayment_WithErrors()
         {
+            var sut = new PaymentMapperJsonGB();
             var expectedAmount = "100,21";
 
             var testJson = $@"{{
@@ -154,7 +222,26 @@ namespace PaymentsSystemExample.UnitTests
                 }}]
             }}";
 
-            var resultPayment = _sut.Map(testJson);
+            var resultPayment = sut.Map(testJson);
+            Assert.True(sut.HasErrors);
+        }
+
+        [Fact]
+        public void AndForDifferentCulture_WithCommaDecimalSeparator_ReturnValidPayment()
+        {
+            var sut = new PaymentMapperJson("nl-BE");
+            var expectedAmount = "100,21";
+
+            var testJson = $@"{{
+                'data': [{{
+                    'attributes':{{
+                        'amount': '{expectedAmount}'
+                    }}
+                }}]
+            }}";
+
+            var resultPayment = sut.Map(testJson);
+            Assert.False(sut.HasErrors);
         }
     }
 }
