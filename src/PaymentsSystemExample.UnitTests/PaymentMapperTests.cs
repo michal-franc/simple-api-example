@@ -99,10 +99,19 @@ namespace PaymentsSystemExample.UnitTests
         public List<RequestMetadata> data { get; set; }
     }
 
+    public class ParsedPayment
+    {
+        public decimal Amount { get; }
+
+        public ParsedPayment(Attributes attributes)
+        {
+            this.Amount = attributes.amount;
+        }
+    }
+
     public interface IPaymentMapper
     {
-        //TODO: This is at the moment breaking extensibility
-        RequestRoot Map(string rawData);
+        IEnumerable<ParsedPayment> Map(string rawData);
     }
 
     class AmountConverter: JsonConverter
@@ -133,7 +142,7 @@ namespace PaymentsSystemExample.UnitTests
                 return null;
             }
 
-            throw new JsonSerializationException("Not supported token yype: " + token.Type.ToString());
+            throw new JsonSerializationException("Not supported token type: " + token.Type.ToString());
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -146,6 +155,9 @@ namespace PaymentsSystemExample.UnitTests
     public class PaymentMapperJson : IPaymentMapper
     {
         // Outside of this class we wont need to change the parsing errors collection -> changing only to enumeration
+        // This does not support validation per payment object
+        // But if needed we can change this object to dictionary and potentialy during parsing identify
+        // payment id as a key and collection of errors as a value
         public IEnumerable<string> ParsingErrors => _parsingErrors;
         public bool HasErrors => _parsingErrors.Count > 0;
 
@@ -172,9 +184,18 @@ namespace PaymentsSystemExample.UnitTests
             };
         }
 
-        public RequestRoot Map(string rawPayment)
+        public IEnumerable<ParsedPayment> Map(string rawJson)
         {
-            return JsonConvert.DeserializeObject<RequestRoot>(rawPayment, _serializerSettings);
+            var parsedPayments = new List<ParsedPayment>();
+
+            var rawPayments = JsonConvert.DeserializeObject<RequestRoot>(rawJson, _serializerSettings).data;
+
+            foreach(var rawPayment in rawPayments)
+            {
+                parsedPayments.Add(new ParsedPayment(rawPayment.attributes));
+            }
+
+            return parsedPayments;
         }
     }
 
@@ -191,10 +212,10 @@ namespace PaymentsSystemExample.UnitTests
     public class WhenMappingPaymentFromJsonTests
     {
         [Fact]
-        public void AndAmountIsValid_ThenParseAmount_AndReturnValidPayment()
+        public void AndAmountIsValid_ThenReturnPayment_AndNowParsingErrors()
         {
             var sut = new PaymentMapperJsonGB();
-            var expectedAmount = "100.21";
+            var expectedAmount = 100.21m;
 
             var testJson = $@"{{
                 'data': [{{
@@ -204,12 +225,13 @@ namespace PaymentsSystemExample.UnitTests
                 }}]
             }}";
 
-            var root = sut.Map(testJson);
-            Assert.Equal(expectedAmount, root.data[0].attributes.amount.ToString());
+            var resultPayment = sut.Map(testJson);
+            Assert.Equal(expectedAmount, resultPayment.First().Amount);
+            Assert.False(sut.HasErrors);
         }
 
         [Fact]
-        public void AndInvalidDecimalSeparator_ThenReturnNotValidPayment_WithErrors()
+        public void AndInvalidDecimalSeparator_ThenReturnPayment_WithParsingErrors()
         {
             var sut = new PaymentMapperJsonGB();
             var expectedAmount = "100,21";
@@ -227,9 +249,10 @@ namespace PaymentsSystemExample.UnitTests
         }
 
         [Fact]
-        public void AndForDifferentCulture_WithCommaDecimalSeparator_ReturnValidPayment()
+        public void AndForDifferentCulture_WithCommaDecimalSeparator_RetunrPayment_AndNoParsingErrors()
         {
-            var sut = new PaymentMapperJson("nl-BE");
+            var testCulture = "nl-BE";
+            var sut = new PaymentMapperJson(testCulture);
             var expectedAmount = "100,21";
 
             var testJson = $@"{{
@@ -242,6 +265,7 @@ namespace PaymentsSystemExample.UnitTests
 
             var resultPayment = sut.Map(testJson);
             Assert.False(sut.HasErrors);
+            Assert.Equal(expectedAmount, resultPayment.First().Amount.ToString(CultureInfo.CreateSpecificCulture(testCulture)));
         }
     }
 }
