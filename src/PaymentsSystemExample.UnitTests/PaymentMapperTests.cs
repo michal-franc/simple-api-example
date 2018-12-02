@@ -78,7 +78,7 @@ namespace PaymentsSystemExample.UnitTests
         public string payment_purpose { get; set; }
         public string payment_scheme { get; set; }
         public string payment_type { get; set; }
-        public string processing_date { get; set; }
+        public DateTime processing_date { get; set; }
         public string reference { get; set; }
         public string scheme_payment_sub_type { get; set; }
         public string scheme_payment_type { get; set; }
@@ -102,10 +102,12 @@ namespace PaymentsSystemExample.UnitTests
     public class ParsedPayment
     {
         public decimal Amount { get; }
+        public DateTime ProcessingDate { get; }
 
         public ParsedPayment(Attributes attributes)
         {
             this.Amount = attributes.amount;
+            this.ProcessingDate = attributes.processing_date;
         }
     }
 
@@ -151,6 +153,44 @@ namespace PaymentsSystemExample.UnitTests
         }
     }
 
+    class ProcessingDateConverter: JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return (objectType == typeof(DateTime) || objectType == typeof(DateTime?));
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            JToken token = JToken.Load(reader);
+            if (token.Type == JTokenType.String)
+            {
+                DateTime value = default(DateTime);
+
+                // Allowing only YYYY-MM-DD format
+                // As we are forcing specific format we can use InvariantCulture
+                if(DateTime.TryParseExact(token.ToString(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out value))
+                {
+                    return value;
+                }
+
+                throw new JsonSerializationException("Incorrect decimal format: " + token.ToString());
+            }
+
+            if (token.Type == JTokenType.Null && objectType == typeof(DateTime?))
+            {
+                return null;
+            }
+
+            throw new JsonSerializationException("Not supported token type: " + token.Type.ToString());
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     // This has to be singleton injected
     public class PaymentMapperJson : IPaymentMapper
     {
@@ -180,7 +220,8 @@ namespace PaymentsSystemExample.UnitTests
                 },
                 Culture = new CultureInfo(cultureCode),
                 // As this is singleton for the global scope maintaned by container I am not worried about creating this objects.
-                Converters = new List<JsonConverter> { new AmountConverter() }
+                Converters = new List<JsonConverter> { new AmountConverter(), new ProcessingDateConverter() },
+                DateFormatHandling = DateFormatHandling.IsoDateFormat
             };
         }
 
@@ -205,14 +246,77 @@ namespace PaymentsSystemExample.UnitTests
         public PaymentMapperJsonGB(): base("en-GB") {}
     }
 
-    // These raw payment objects - add json to them and keep them internal to different layer
-    // Test mapping here with special rules and validations added to json .net
-    // then create a WritePayment class that when leaves the Adapter Layer is transformed to Payment Class that is read only.
-    // So that no one can change the class in other layers using it
+    // Based on the api reference
+    // http://api-docs.form3.tech/api.html#transaction-api-payments-create
+    // We expect date in format YYYY-MM-DD
+    // We need to validate it and throw an error if user specifries different date
+    // For instance with hours - assuming that we will process this payment in an hour
+    public class WhenMappingPaymentProcessingDateFromJsonTests
+    {
+        [Fact]
+        public void AndDateTimeFormatIsValid_ThenReturnPayment_AndNoParsingErrors()
+        {
+            var sut = new PaymentMapperJsonGB();
+            var expectedDate = "2017-01-18";
+
+            var testJson = $@"{{
+                'data': [{{
+                    'attributes': {{
+                        'processing_date': '{expectedDate}'
+                    }}
+                }}]
+            }}";
+
+            var resultPayment = sut.Map(testJson);
+            Assert.Equal(expectedDate, resultPayment.First().ProcessingDate.ToString("yyyy-MM-dd"));
+            Assert.False(sut.HasErrors);
+        }
+
+        [Fact]
+        public void AndDateTimeWithMinutesAndHours_IsInValid_ThenReturnPayment_AndParsingErrors()
+        {
+            var sut = new PaymentMapperJsonGB();
+            var expectedDate = "2017-01-18 10:10:10";
+
+            var testJson = $@"{{
+                'data': [{{
+                    'attributes': {{
+                        'processing_date': '{expectedDate}'
+                    }}
+                }}]
+            }}";
+
+            var resultPayment = sut.Map(testJson);
+            Assert.True(sut.HasErrors);
+        }
+
+        [Fact]
+        public void AndDateInDiffernetFormat_ThenReturnPayment_AndParsingErrors()
+        {
+            var sut = new PaymentMapperJsonGB();
+            var expectedDate = "2017-18-01";
+
+            var testJson = $@"{{
+                'data': [{{
+                    'attributes': {{
+                        'processing_date': '{expectedDate}'
+                    }}
+                }}]
+            }}";
+
+            var resultPayment = sut.Map(testJson);
+            Assert.True(sut.HasErrors);
+        }
+    }
+
+    // Based on  http://api-docs.form3.tech/api.html#transaction-api-payments
+    // api accepts only decimal points
+    // but to show how I would create i18n parser i added option for specyfing culture code
+    // in the base api i will just use culture with decimal point to force it on the user
     public class WhenMappingPaymentAmountFromJsonTests
     {
         [Fact]
-        public void AndAmountIsValid_ThenReturnPayment_AndNowParsingErrors()
+        public void AndAmountIsValid_ThenReturnPayment_AndNoParsingErrors()
         {
             var sut = new PaymentMapperJsonGB();
             var expectedAmount = 100.21m;
@@ -249,7 +353,7 @@ namespace PaymentsSystemExample.UnitTests
         }
 
         [Fact]
-        public void AndForDifferentCulture_WithCommaDecimalSeparator_RetunrPayment_AndNoParsingErrors()
+        public void WithCommaSeparatedCulture_RetunrPayment_AndNoParsingErrors()
         {
             var testCulture = "nl-BE";
             var sut = new PaymentMapperJson(testCulture);
