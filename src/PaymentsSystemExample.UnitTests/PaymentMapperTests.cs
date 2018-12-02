@@ -4,6 +4,7 @@ using System.Globalization;
 using Xunit;
 using FluentAssertions;
 using PaymentsSystemExample.Domain.Adapters;
+using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 
 namespace PaymentsSystemExample.UnitTests
 {

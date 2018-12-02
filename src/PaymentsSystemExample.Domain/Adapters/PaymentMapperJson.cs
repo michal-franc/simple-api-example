@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 using PaymentsSystemExample.Domain.Adapters.CustomJsonConverters;
 
 namespace PaymentsSystemExample.Domain.Adapters
@@ -40,9 +41,9 @@ namespace PaymentsSystemExample.Domain.Adapters
             };
         }
 
-        public IEnumerable<RequestMetadata> Map(string rawJson)
+        public IEnumerable<PaymentRequestMetadata> Map(string rawJson)
         {
-            return JsonConvert.DeserializeObject<RequestRoot>(rawJson, _serializerSettings).Data;
+            return JsonConvert.DeserializeObject<PaymentRequestRoot>(rawJson, _serializerSettings).Data;
         }
     }
 }
