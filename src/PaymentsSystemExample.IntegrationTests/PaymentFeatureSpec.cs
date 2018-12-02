@@ -2,6 +2,13 @@ using LightBDD.Framework;
 using LightBDD.XUnit2;
 using LightBDD.Framework.Scenarios.Extended;
 using Xunit;
+using System;
+using System.Net.Http;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using FluentAssertions;
+
+using PaymentsSystemExample.Api;
 
 namespace PaymentsSystemExample.IntegrationTests
 {
@@ -11,12 +18,22 @@ namespace PaymentsSystemExample.IntegrationTests
     [Label("Payment API Fetch")]
     public class PaymentFeatureSpec : FeatureFixture
     {
+        private readonly HttpClient _client;
+        private HttpResponseMessage _message;
+
+        public PaymentFeatureSpec()
+        {
+            var server = new TestServer(new WebHostBuilder().UseStartup<PaymentApiStartup>());
+            _client = server.CreateClient();
+        }
+
         [Scenario]
         [MultiAssert]
         [Label("And payment doesn't exist")]
         public void PaymentDoesntExistTest()
         {
             Runner.RunScenario(
+                _ => I_call_api_with_id(1),
                 _ => I_get_status_code(404)
             );
         }
@@ -27,6 +44,7 @@ namespace PaymentsSystemExample.IntegrationTests
         public void PaymentDoesExistTest()
         {
             Runner.RunScenario(
+                _ => I_call_api_with_id(2),
                 _ => I_get_status_code(200),
                 _ => I_get_payment_data_in_content()
             );
@@ -34,12 +52,18 @@ namespace PaymentsSystemExample.IntegrationTests
 
         private void I_get_status_code(int expectedStatusCode)
         {
-            Assert.True(false);
+            _message.StatusCode.Should().Be(expectedStatusCode);
+        }
+
+        private void I_call_api_with_id(int id)
+        {
+            //TODO: remove result and make it async requires LightBDD Async Scenarios
+            _message = _client.GetAsync($"/api/payment/{id}").Result;
         }
 
         private void I_get_payment_data_in_content()
         {
-            Assert.True(false);
+            Assert.True(true);
         }
     }
 }

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace payment_system_example
+namespace PaymentsSystemExample.Api
 {
     public class Program
     {
@@ -19,6 +19,6 @@ namespace payment_system_example
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+                .UseStartup<PaymentApiStartup>();
     }
 }
