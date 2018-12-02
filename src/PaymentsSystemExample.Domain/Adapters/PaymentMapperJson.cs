@@ -42,7 +42,7 @@ namespace PaymentsSystemExample.Domain.Adapters
 
         public IEnumerable<RequestMetadata> Map(string rawJson)
         {
-            return JsonConvert.DeserializeObject<RequestRoot>(rawJson, _serializerSettings).data;
+            return JsonConvert.DeserializeObject<RequestRoot>(rawJson, _serializerSettings).Data;
         }
     }
 }

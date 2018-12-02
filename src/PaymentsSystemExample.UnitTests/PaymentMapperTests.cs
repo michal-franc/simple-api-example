@@ -13,11 +13,103 @@ namespace PaymentsSystemExample.UnitTests
         public PaymentMapperJsonGB(): base("en-GB") {}
     }
 
+    internal static class TestHelper 
+    {
+        public static string GetStringValueUsingFieldName(string fieldName, object obj)
+        {
+            var property = obj.GetType().GetProperty(fieldName);
+
+            // For nicer message in failing unit tests
+            if(property == null)
+            {
+                throw new Exception($"Property {fieldName} not found in {obj.GetType()}");
+            }
+
+            var value = property.GetValue(obj, null);
+
+            if(value == null)
+            {
+                throw new Exception($"Value for field {fieldName} not found in {obj.GetType()}. Potential mapping problem on JsonProp level.");
+            }
+
+            return value.ToString();
+        }
+    }
+
+    public class WhenParsingParty
+    {
+        [Theory]
+        [InlineData("beneficiary")]
+        [InlineData("debtor")]
+        [InlineData("sponsor")]
+        public void ForParty_TheFieldsAreCorrectlyMapped(string partyType)
+        {
+            var sut = new PaymentMapperJsonGB();
+            var testAccountName = "accountName";
+            var testAccountNumber = "accountNumber";
+            var testAccountNumberCode = "accountNumberCode";
+            var testAccountType = 9;
+            var testAddress = "address";
+            var testBankId = "bankId";
+            var testBankIdCode = "bankCode";
+            var testName = "name";
+
+            var testJson = $@"{{
+                'data': [{{
+                    'attributes': {{
+                        '{partyType}_party': {{
+                            'account_name': '{testAccountName}',
+                            'account_number': '{testAccountNumber}',
+                            'account_number_code': '{testAccountNumberCode}',
+                            'account_type': '{testAccountType}',
+                            'address': '{testAddress}',
+                            'bank_id': '{testBankId}',
+                            'bank_id_code': '{testBankIdCode}',
+                            'name': '{testName}'
+                        }}
+                    }}
+                }}]
+            }}";
+
+            var resultPayment = sut.Map(testJson);
+
+            sut.HasErrors.Should().Be(false);
+
+            var testPayment = resultPayment.First().PaymentInJson;
+
+            Party testParty = null;
+
+            // this is not perfect but adding refleciton here would be an overkill
+            // This test is maybe overcomplicated and should be split
+            switch(partyType)
+            {
+                case "beneficiary": 
+                    testParty = testPayment.Beneficiary;
+                    break;
+                case "debtor": 
+                    testParty = testPayment.Debtor;
+                    break;
+                case "sponsor": 
+                    testParty = testPayment.Sponsor;
+                    break;
+            }
+
+            testParty.AccountName.Should().Be(testAccountName);
+            testParty.AccountNumber.Should().Be(testAccountNumber);
+            testParty.AccountType.Should().Be(testAccountType);
+            testParty.AccountNumberCode.Should().Be(testAccountNumberCode);
+            testParty.Address.Should().Be(testAddress);
+            testParty.BankId.Should().Be(testBankId);
+            testParty.BankIdCode.Should().Be(testBankIdCode);
+        }
+    }
+
     // I am not validating domain here just checking if this fields are correctly mapped
     // This kind of test could be handled by json schema
     // This test could be an overkill but is also usefull to make sure that we follow the contract.
     public class WhenMappingPaymentStringBasedFields
     {
+        // This is one method to test multiple parsing values
         [Theory]
         [InlineData("currency", "Currency")]
         [InlineData("end_to_end_reference", "E2EReference")]
@@ -32,7 +124,7 @@ namespace PaymentsSystemExample.UnitTests
         public void TheFieldsAreCorrectlyMapped(string sourceField, string targetField)
         {
             var sut = new PaymentMapperJsonGB();
-            var expectedValue = "JustARandomValue";
+            var expectedValue = $"test - data {targetField}";
 
             var testJson = $@"{{
                 'data': [{{
@@ -45,27 +137,7 @@ namespace PaymentsSystemExample.UnitTests
             var resultPayment = sut.Map(testJson);
 
             sut.HasErrors.Should().Be(false);
-            expectedValue.Should().Be(this.GetStringValueUsingFieldName(targetField, resultPayment.First().PaymentInJson));
-        }
-
-        private string GetStringValueUsingFieldName(string fieldName, object obj)
-        {
-            var property = obj.GetType().GetProperty(fieldName);
-
-            // For nicer message in unit tests
-            if(property == null)
-            {
-                throw new Exception($"Property {fieldName} not found in {obj.GetType()}");
-            }
-
-            var value = property.GetValue(obj, null);
-
-            if(value == null)
-            {
-                throw new Exception($"Value for field {fieldName} not found in {obj.GetType()}. Potential mapping problem on JsonProp level.");
-            }
-
-            return value.ToString();
+            expectedValue.Should().Be(TestHelper.GetStringValueUsingFieldName(targetField, resultPayment.First().PaymentInJson));
         }
     }
 
