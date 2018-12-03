@@ -10,6 +10,11 @@ using FluentAssertions;
 
 using PaymentsSystemExample.Api;
 
+// TODO: how to simulate that something exists?
+// TODO: provide a way to mock a database service layer on Startup?
+// TODO: start in memory database and provide it for integration tests
+// TODO: start real database? using docker?
+
 namespace PaymentsSystemExample.IntegrationTests
 {
     [FeatureDescription(
