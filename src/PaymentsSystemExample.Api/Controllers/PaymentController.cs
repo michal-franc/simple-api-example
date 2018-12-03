@@ -25,6 +25,11 @@ namespace PaymentsSystemExample.Api.Controllers
         {
             InMemDB.Add(new Payment { Id = id });
         }
+
+        public static void DeletePayment(string id)
+        {
+            InMemDB.Remove(InMemDB.Where(x => x.Id == id).Single());
+        }
     }
 
     [Route("api/[controller]")]
@@ -48,6 +53,12 @@ namespace PaymentsSystemExample.Api.Controllers
         public void Put(string id/*, [FromBody] string value*/)
         {
             PaymentService.CreatePayment(id);
+        }
+
+        [HttpDelete("{id}")]
+        public void Delete(string id)
+        {
+            PaymentService.DeletePayment(id);
         }
     }
 }

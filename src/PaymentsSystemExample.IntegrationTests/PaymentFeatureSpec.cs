@@ -56,9 +56,31 @@ namespace PaymentsSystemExample.IntegrationTests
             );
         }
 
+        [Scenario]
+        [MultiAssert]
+        [Label("And payment is deleted")]
+        public void PaymentIsCreatedThenDeletedTest()
+        {
+            Runner.RunScenario(
+                _ => I_create_payment_with_id(3),
+                _ => I_call_api_with_id(3),
+                _ => I_get_status_code(200),
+                _ => I_get_payment_data_in_content(),
+                _ => I_delete_payment_with_id(3),
+                _ => I_call_api_with_id(3),
+                _ => I_get_status_code(404)
+            );
+        }
+
         private void I_get_status_code(int expectedStatusCode)
         {
             _message.StatusCode.Should().Be(expectedStatusCode);
+        }
+
+        private void I_delete_payment_with_id(int id)
+        {
+            //TODO: remove result and make it async requires LightBDD Async Scenarios
+            var test = _client.DeleteAsync($"/api/payment/{id}").Result;
         }
 
         private void I_create_payment_with_id(int id)
