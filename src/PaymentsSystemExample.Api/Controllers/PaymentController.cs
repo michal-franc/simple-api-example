@@ -7,11 +7,23 @@ using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 
 namespace PaymentsSystemExample.Api.Controllers
 {
-    public class PaymentService
+    public static class PaymentService
     {
-        Payment GetPayment(int id)
+        private static List<Payment> InMemDB;
+
+        static PaymentService()
         {
-            return null;
+            InMemDB = new List<Payment>();
+        }
+
+        public static Payment GetPayment(string id)
+        {
+            return InMemDB.Find(x => x.Id == id);
+        }
+
+        public static void CreatePayment(string id)
+        {
+            InMemDB.Add(new Payment { Id = id });
         }
     }
 
@@ -19,29 +31,23 @@ namespace PaymentsSystemExample.Api.Controllers
     [ApiController]
     public class PaymentController : ControllerBase
     {
-        // GET api/values/5
         [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
+        public ActionResult<Payment> Get(string id)
         {
-            return "value";
+            var payment = PaymentService.GetPayment(id);
+
+            if(payment == null)
+            {
+                return NotFound();
+            }
+
+            return payment;
         }
 
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT api/values/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public void Put(string id/*, [FromBody] string value*/)
         {
-        }
-
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            PaymentService.CreatePayment(id);
         }
     }
 }
