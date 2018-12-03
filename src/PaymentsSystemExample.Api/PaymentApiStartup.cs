@@ -37,10 +37,12 @@ namespace PaymentsSystemExample.Api
             }
             else
             {
-                app.UseHsts();
+                //: TODO
+                //app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            //: TODO
+            //app.UseHttpsRedirection();
             app.UseMvc();
         }
     }
