@@ -98,8 +98,9 @@ namespace PaymentsSystemExample.IntegrationTests
             var incorrectId = "incorrect_ID";
             Runner.RunScenario(
                 _ => I_call_api_with_incorrect_id(incorrectId),
-                _ => I_get_status_code(200),
-                _ => I_get_payment_data_in_content()
+                _ => I_get_status_code(400)
+                // TODO: Should we verify error messsages?
+                //_ => I_get_error_message("")
             );
         }
 
