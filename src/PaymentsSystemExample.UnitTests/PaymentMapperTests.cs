@@ -79,7 +79,7 @@ namespace PaymentsSystemExample.UnitTests
 
             sut.HasErrors.Should().Be(false);
 
-            var testPayment = resultPayment.First().PaymentInJson;
+            var attributes = resultPayment.First().Attributes;
 
             Party testParty = null;
 
@@ -88,13 +88,13 @@ namespace PaymentsSystemExample.UnitTests
             switch(partyType)
             {
                 case "beneficiary": 
-                    testParty = testPayment.Beneficiary;
+                    testParty = attributes.Beneficiary;
                     break;
                 case "debtor": 
-                    testParty = testPayment.Debtor;
+                    testParty = attributes.Debtor;
                     break;
                 case "sponsor": 
-                    testParty = testPayment.Sponsor;
+                    testParty = attributes.Sponsor;
                     break;
             }
 
@@ -141,7 +141,7 @@ namespace PaymentsSystemExample.UnitTests
             var resultPayment = sut.Map(testJson);
 
             sut.HasErrors.Should().Be(false);
-            expectedValue.Should().Be(TestHelper.GetStringValueUsingFieldName(targetField, resultPayment.First().PaymentInJson));
+            expectedValue.Should().Be(TestHelper.GetStringValueUsingFieldName(targetField, resultPayment.First().Attributes));
         }
     }
 
@@ -173,7 +173,7 @@ namespace PaymentsSystemExample.UnitTests
             var resultPayment = sut.Map(testJson);
 
             sut.HasErrors.Should().Be(false);
-            expectedDate.Should().Be(resultPayment.First().PaymentInJson.ProcessingDate.ToString(expectedFormat));
+            expectedDate.Should().Be(resultPayment.First().Attributes.ProcessingDate.ToString(expectedFormat));
         }
 
         [Fact]
@@ -234,7 +234,7 @@ namespace PaymentsSystemExample.UnitTests
             }}";
 
             var resultPayment = sut.Map(testJson);
-            expectedAmount.Should().Be(resultPayment.First().PaymentInJson.Amount);
+            expectedAmount.Should().Be(resultPayment.First().Attributes.Amount);
             sut.HasErrors.Should().Be(false);
         }
 
@@ -273,7 +273,7 @@ namespace PaymentsSystemExample.UnitTests
 
             var resultPayment = sut.Map(testJson);
             sut.HasErrors.Should().Be(false);
-            expectedAmount.Should().Be(resultPayment.First().PaymentInJson.Amount.ToString(CultureInfo.CreateSpecificCulture(testCulture)));
+            expectedAmount.Should().Be(resultPayment.First().Attributes.Amount.ToString(CultureInfo.CreateSpecificCulture(testCulture)));
         }
     }
 }

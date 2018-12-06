@@ -41,9 +41,9 @@ namespace PaymentsSystemExample.Domain.Adapters
             };
         }
 
-        public IEnumerable<PaymentRequestMetadata> Map(string rawJson)
+        public IEnumerable<Payment> Map(string rawJson)
         {
-            return JsonConvert.DeserializeObject<PaymentRequestRoot>(rawJson, _serializerSettings).Data;
+            return JsonConvert.DeserializeObject<PaymentRoot>(rawJson, _serializerSettings).Data;
         }
     }
 }

@@ -5,6 +5,6 @@ namespace PaymentsSystemExample.Domain.Adapters
 {
     public interface IPaymentMapper
     {
-        IEnumerable<PaymentRequestMetadata> Map(string rawData);
+        IEnumerable<Payment> Map(string rawData);
     }
 }

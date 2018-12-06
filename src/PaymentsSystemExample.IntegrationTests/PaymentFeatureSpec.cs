@@ -7,20 +7,49 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using FluentAssertions;
-
 using PaymentsSystemExample.Api;
 
-// TODO: how to simulate that something exists?
-// TODO: provide a way to mock a database service layer on Startup?
-// TODO: start in memory database and provide it for integration tests
-// TODO: start real database? using docker?
+// TODO: Real DB service -> docker dynamodb
+// TODO: Mocked DB using localstack -> usefull to test interaction with API
+// TODO: add check of payment and real payment builder with mocked data.
+
+// TODO:  All the scenarios to cover
+//  Posting not handled HTTP Methdo -> correct error
+//  Posting to non existing endpoint -> 404
+//  scenarios
+//  get
+//   - 200 
+//   - 404 -> no payment id
+//   - 500 -> oops something happend
+//  put (full update replace)
+//   - 200 
+//   - incorrect data - validation error
+//      - missing values
+//      - incorrect amount
+//      - incorrect date format
+//   - 500 -> oops something happend
+//  patch (partial update)
+//    - payment id -> 
+//  list -> get on resource with S
+//  delete ->
+//        404 -> payment
+//        200 -> success
+//  all  -> mocked basic auth token
+//   - 403 -> no token
+//   - 403 -> token - org mismatch
+//   - error -> no org id no version and other metadata
+
+// Updates need to check if version number has not changed
+// Optimistic concurrency
+// -> return -> 412 item modified
+///  https://stackoverflow.com/questions/5369480/when-is-it-appropriate-to-respond-with-a-http-412-error 
 
 namespace PaymentsSystemExample.IntegrationTests
 {
     [FeatureDescription(
-        @"As a user when I call Payment API to fetch payment"
+        @"As a user when I call Payment API to GET payment"
     )]
-    [Label("Payment API Fetch")]
+    [Label("Payment API GET")]
     public class PaymentFeatureSpec : FeatureFixture
     {
         private readonly HttpClient _client;
@@ -34,23 +63,28 @@ namespace PaymentsSystemExample.IntegrationTests
 
         [Scenario]
         [MultiAssert]
-        [Label("And payment doesn't exist")]
+        [Label("And I get payment that doesn't exist")]
         public void PaymentDoesntExistTest()
         {
+            var nonExistingPaymentId = Guid.NewGuid();
+
             Runner.RunScenario(
-                _ => I_call_api_with_id(1),
+                _ => I_call_api_with_id(nonExistingPaymentId),
                 _ => I_get_status_code(404)
             );
         }
 
         [Scenario]
         [MultiAssert]
-        [Label("And payment does exist")]
+        [Label("And I get payment that does exist")]
         public void PaymentDoesExistTest()
         {
+            var existingPaymentId = Guid.NewGuid();
+
             Runner.RunScenario(
-                _ => I_create_payment_with_id(2),
-                _ => I_call_api_with_id(2),
+                //TODO: This step cannot be part of this test as we then test two functionalities if put fails this one will also fail - tests should be isolated
+                _ => I_create_payment_with_id(existingPaymentId),
+                _ => I_call_api_with_id(existingPaymentId),
                 _ => I_get_status_code(200),
                 _ => I_get_payment_data_in_content()
             );
@@ -58,17 +92,14 @@ namespace PaymentsSystemExample.IntegrationTests
 
         [Scenario]
         [MultiAssert]
-        [Label("And payment is deleted")]
-        public void PaymentIsCreatedThenDeletedTest()
+        [Label("And I call api with incorrect id value")]
+        public void PaymentIncorrectCall()
         {
+            var incorrectId = "incorrect_ID";
             Runner.RunScenario(
-                _ => I_create_payment_with_id(3),
-                _ => I_call_api_with_id(3),
+                _ => I_call_api_with_incorrect_id(incorrectId),
                 _ => I_get_status_code(200),
-                _ => I_get_payment_data_in_content(),
-                _ => I_delete_payment_with_id(3),
-                _ => I_call_api_with_id(3),
-                _ => I_get_status_code(404)
+                _ => I_get_payment_data_in_content()
             );
         }
 
@@ -77,19 +108,25 @@ namespace PaymentsSystemExample.IntegrationTests
             _message.StatusCode.Should().Be(expectedStatusCode);
         }
 
-        private void I_delete_payment_with_id(int id)
+        private void I_delete_payment_with_id(Guid id)
         {
             //TODO: remove result and make it async requires LightBDD Async Scenarios
             var test = _client.DeleteAsync($"/api/payment/{id}").Result;
         }
 
-        private void I_create_payment_with_id(int id)
+        private void I_create_payment_with_id(Guid id)
         {
             //TODO: remove result and make it async requires LightBDD Async Scenarios
             var test = _client.PutAsJsonAsync($"/api/payment/{id}", id).Result;
         }
 
-        private void I_call_api_with_id(int id)
+        private void I_call_api_with_id(Guid id)
+        {
+            //TODO: remove result and make it async requires LightBDD Async Scenarios
+            _message = _client.GetAsync($"/api/payment/{id}").Result;
+        }
+
+        private void I_call_api_with_incorrect_id(string id)
         {
             //TODO: remove result and make it async requires LightBDD Async Scenarios
             _message = _client.GetAsync($"/api/payment/{id}").Result;
@@ -97,7 +134,7 @@ namespace PaymentsSystemExample.IntegrationTests
 
         private void I_get_payment_data_in_content()
         {
-            Assert.True(true);
+            _message.Content.Should().NotBeNull();
         }
     }
 }

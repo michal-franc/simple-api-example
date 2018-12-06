@@ -2,8 +2,8 @@ using System.Collections.Generic;
 
 namespace PaymentsSystemExample.Domain.Adapters.JsonObjects
 {
-    public class PaymentRequestRoot
+    public class PaymentRoot
     {
-        public List<PaymentRequestMetadata> Data { get; set; }
+        public List<Payment> Data { get; set; }
     }
 }
