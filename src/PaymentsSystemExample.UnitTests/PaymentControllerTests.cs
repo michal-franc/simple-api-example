@@ -64,6 +64,9 @@ namespace PaymentsSystemExample.UnitTests
             var result = sut.Post(rawPayment, cultureCode);
 
             result.Should().BeOfType<BadRequestObjectResult>();
+
+            var badRequestObjectResult = (BadRequestObjectResult)result;
+            badRequestObjectResult.Value.ToString().Should().Contain("X-CultureCode");
         }
     }
 
@@ -118,8 +121,10 @@ namespace PaymentsSystemExample.UnitTests
             var sut = new PaymentController(paymentServiceMock.Object);
 
             var result = sut.Put(rawPayment, cultureCode);
-
             result.Should().BeOfType<BadRequestObjectResult>();
+
+            var badRequestObjectResult = (BadRequestObjectResult)result;
+            badRequestObjectResult.Value.ToString().Should().Contain("X-CultureCode");
         }
     }
 
