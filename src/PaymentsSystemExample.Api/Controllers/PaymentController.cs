@@ -45,7 +45,7 @@ namespace PaymentsSystemExample.Api.Controllers
         // TODO: return 422 for validation error
         // TODO: return 409 for duplicate error
 
-        [HttpPut("{id}")]
+        [HttpPut]
         // TODO: not void here but return a message succesfull or something + 200
         public ActionResult Put(string paymentsRawData)
         {
@@ -74,21 +74,32 @@ namespace PaymentsSystemExample.Api.Controllers
                 return Ok();
             }
         }
+        //TODO!!: Request vcalidation errors on controller side
+        //TODO!!: Domain validatione erors on domain side
+        //TODO!!: you need to do parsing on the cotrnoller side
+        //TODO!!: service should operate with domain objects not raw string
 
-        [HttpPost("{id}")]
-        // TODO: not void here but return a message succesfull or something + 200
-        public ActionResult Post(string id, [FromBody] string value)
+        [HttpPost]
+        public ActionResult Post(string paymentsRawData)
         {
-            // TODO: not found
-            // TODO move this to action filter?
-            var guid = this.TryConvertIdToGuid(id);
-            if(guid == default(Guid))
-            { 
-                return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
+            // TODO: as with PUT - we need to verify if the version was not changed and if all validations pass
+            // TODO: if it is not truth we discard whole request
+
+            var result = this._paymentService.UpdatePayment(paymentsRawData);
+
+            if(result.HasErrors)
+            {
+                return BadRequest(result);
             }
+            else
+            {
+                return Ok();
+            }
+        }
 
-            this._paymentService.UpdatePayment(guid, value);
-
+        [HttpPatch("{id}")]
+        public ActionResult HttpPatch(string id)
+        {
             return Ok();
         }
 

@@ -25,7 +25,9 @@ namespace PaymentsSystemExample.Api.Services
     public interface IPaymentService
     {
         Payment GetPayment(Guid id);
-        void UpdatePayment(Guid id, string value);
+        //TODO: pluralise
+        ValidationErrors UpdatePayment(string paymentsRawData);
+        //TODO: pluralise
         ValidationErrors CreatePayment(string paymentsRawData);
         bool DeletePayment(Guid id);
     }
@@ -44,12 +46,9 @@ namespace PaymentsSystemExample.Api.Services
             return this.InMemDB.Find(x => x.Id == id);
         }
 
-        public void UpdatePayment(Guid id, string value)
+        public ValidationErrors UpdatePayment(string paymentsRawData)
         {
-            var payment = InMemDB.Find(x => x.Id == id);
-            this.InMemDB.Remove(payment);
-            payment.Attributes.Currency = value;
-            this.InMemDB.Add(payment);
+            return new ValidationErrors();
         }
 
         public ValidationErrors CreatePayment(string paymentsRawData)
