@@ -10,7 +10,7 @@ namespace PaymentsSystemExample.Api.Services
         Payment GetPayment(Guid id);
         void UpdatePayment(Guid id, string value);
         void CreatePayment(Guid id);
-        void DeletePayment(Guid id);
+        bool DeletePayment(Guid id);
     }
 
     public class PaymentService : IPaymentService
@@ -40,9 +40,15 @@ namespace PaymentsSystemExample.Api.Services
             this.InMemDB.Add(new Payment { Id = id });
         }
 
-        public void DeletePayment(Guid id)
+        public bool DeletePayment(Guid id)
         {
-            this.InMemDB.Remove(InMemDB.Where(x => x.Id == id).Single());
+            if(InMemDB.Any(x => x.Id == id))
+            {
+                this.InMemDB.Remove(InMemDB.Where(x => x.Id == id).Single());
+                return true;
+            }
+
+            return false;
         }
     }
 }

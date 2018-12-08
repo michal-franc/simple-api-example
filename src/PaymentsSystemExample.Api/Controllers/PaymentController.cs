@@ -62,6 +62,7 @@ namespace PaymentsSystemExample.Api.Controllers
         // TODO: not void here but return a message succesfull or something + 200
         public ActionResult Post(string id, [FromBody] string value)
         {
+            // TODO: not found
             // TODO move this to action filter?
             var guid = this.TryConvertIdToGuid(id);
             if(guid == default(Guid))
@@ -75,8 +76,7 @@ namespace PaymentsSystemExample.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        // TODO: not void here but return a message succesfull or something + 200
-        public ActionResult Delete(string id)
+        public IActionResult Delete(string id)
         {
             // TODO move this to action filter?
             var guid = this.TryConvertIdToGuid(id);
@@ -85,9 +85,16 @@ namespace PaymentsSystemExample.Api.Controllers
                 return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
             }
 
-            this._paymentService.DeletePayment(guid);
+            // TODO: not found
 
-            return Ok();
+            if (this._paymentService.DeletePayment(guid))
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         private Guid TryConvertIdToGuid(string id) 
