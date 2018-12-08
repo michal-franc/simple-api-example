@@ -16,18 +16,18 @@ using PaymentsSystemExample.Api;
 // TODO:  All the scenarios to cover
 //  Posting not handled HTTP Methdo -> correct error
 //  Posting to non existing endpoint -> 404
-//  scenarios
-//  get
-//   - 200 
-//   - 404 -> no payment id
-//   - 500 -> oops something happend
+
+//  scenarios:
+//  get (done)
+//   - 200  (done)
+//   - 404 -> no payment id (done)
+
 //  put (full update replace)
 //   - 200 
 //   - incorrect data - validation error
 //      - missing values
 //      - incorrect amount
 //      - incorrect date format
-//   - 500 -> oops something happend
 //  patch (partial update)
 //    - payment id -> 
 //  list -> get on resource with S
@@ -38,6 +38,7 @@ using PaymentsSystemExample.Api;
 //   - 403 -> no token
 //   - 403 -> token - org mismatch
 //   - error -> no org id no version and other metadata
+//   - 500 -> how to test it? exception handling within services
 
 // Updates need to check if version number has not changed
 // Optimistic concurrency
@@ -83,7 +84,7 @@ namespace PaymentsSystemExample.IntegrationTests
 
             Runner.RunScenario(
                 //TODO: This step cannot be part of this test as we then test two functionalities if put fails this one will also fail - tests should be isolated
-                _ => I_create_payment_with_id(existingPaymentId),
+                _ => I_populate_db_with_payment(existingPaymentId),
                 _ => I_call_api_with_id(existingPaymentId),
                 _ => I_get_status_code(200),
                 _ => I_get_payment_data_in_content()
@@ -104,6 +105,12 @@ namespace PaymentsSystemExample.IntegrationTests
             );
         }
 
+        private void I_populate_db_with_payment(Guid id)
+        {
+            //TODO: need db implementation here :X
+        }
+
+        // TODO: should this be checking status code? or should i hide code and use -> BadRequest -> ok etc
         private void I_get_status_code(int expectedStatusCode)
         {
             _message.StatusCode.Should().Be(expectedStatusCode);
