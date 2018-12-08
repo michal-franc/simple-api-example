@@ -42,20 +42,37 @@ namespace PaymentsSystemExample.Api.Controllers
             return Ok(payment);
         }
 
+        // TODO: return 422 for validation error
+        // TODO: return 409 for duplicate error
+
         [HttpPut("{id}")]
         // TODO: not void here but return a message succesfull or something + 200
-        public ActionResult Put(string id/*, [FromBody] string value*/)
+        public ActionResult Put(string paymentsRawData)
         {
-            // TODO move this to action filter?
-            var guid = this.TryConvertIdToGuid(id);
-            if(guid == default(Guid))
-            { 
-                return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
+            // TODO: support for more payments than one
+            // TODO: move this to action filter?
+            // TODO: This should be checked in the Domain validation process
+            // var guid = this.TryConvertIdToGuid(payment.Id);
+            // if(guid == default(Guid))
+            // { 
+            //    return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
+            //}
+
+            // TODO: with multiple payments? should we discard the whole request if one of them is failed? or return the ones that were successful and inform the ones that failed?
+            // TODO: discard would require - transaction?
+            // TODO: lack of dicards - lower the amount of data sent with retry as user doesnt have to sent it again but they need to deduplicate it
+            // TODO: users would probably retry the whole package ... so i will assume dicards whole set
+            // TODO: return validation errors and display them
+            var result = this._paymentService.CreatePayment(paymentsRawData);
+
+            if(result.HasErrors)
+            {
+                return BadRequest(result);
             }
-
-            this._paymentService.CreatePayment(guid);
-
-            return Ok();
+            else
+            {
+                return Ok();
+            }
         }
 
         [HttpPost("{id}")]

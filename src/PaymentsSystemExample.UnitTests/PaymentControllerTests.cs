@@ -7,9 +7,27 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using PaymentsSystemExample.Api.Services;
 using PaymentsSystemExample.Domain.Adapters.JsonObjects;
+using System.Collections.Generic;
 
 namespace PaymentsSystemExample.UnitTests
 {
+    public class PaymentControllerTests_WhenCallingPut
+    {
+        [Fact]
+        public void AndThereIsAValidPayment_Return200_AndSavePayment()
+        {
+            var noValidationErrors = new ValidationErrors();
+            var paymentServiceMock = new Mock<IPaymentService>();
+            paymentServiceMock.Setup(x => x.CreatePayment(It.IsAny<string>())).Returns(noValidationErrors);
+
+            var sut = new PaymentController(paymentServiceMock.Object);
+
+            var result = sut.Put(string.Empty);
+
+            result.Should().BeOfType<OkResult>();
+        }
+    }
+
     public class PaymentControllerTests_WhenCallingDelete
     {
         [Fact]

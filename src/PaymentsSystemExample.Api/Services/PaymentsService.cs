@@ -5,11 +5,22 @@ using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 
 namespace PaymentsSystemExample.Api.Services
 {
+    public class ValidationErrors
+    {
+        public IReadOnlyDictionary<string, string> Errors { get; set; }
+        public bool HasErrors => Errors.Count > 0;
+
+        public ValidationErrors()
+        {
+            this.Errors = new Dictionary<string, string>();
+        }
+    }
+
     public interface IPaymentService
     {
         Payment GetPayment(Guid id);
         void UpdatePayment(Guid id, string value);
-        void CreatePayment(Guid id);
+        ValidationErrors CreatePayment(string paymentsRawData);
         bool DeletePayment(Guid id);
     }
 
@@ -35,9 +46,11 @@ namespace PaymentsSystemExample.Api.Services
             this.InMemDB.Add(payment);
         }
 
-        public void CreatePayment(Guid id)
+        public ValidationErrors CreatePayment(string paymentsRawData)
         {
-            this.InMemDB.Add(new Payment { Id = id });
+            var payment = new Payment();
+            this.InMemDB.Add(payment);
+            return new ValidationErrors();
         }
 
         public bool DeletePayment(Guid id)
