@@ -5,36 +5,44 @@ using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 
 namespace PaymentsSystemExample.Api.Services
 {
-    public static class PaymentService
+    public interface IPaymentService
     {
-        private static List<Payment> InMemDB;
+        Payment GetPayment(Guid id);
+        void UpdatePayment(Guid id, string value);
+        void CreatePayment(Guid id);
+        void DeletePayment(Guid id);
+    }
 
-        static PaymentService()
+    public class PaymentService : IPaymentService
+    {
+        private readonly List<Payment> InMemDB;
+
+        public PaymentService()
         {
-            InMemDB = new List<Payment>();
+            this.InMemDB = new List<Payment>();
         }
 
-        public static Payment GetPayment(Guid id)
+        public Payment GetPayment(Guid id)
         {
-            return InMemDB.Find(x => x.Id == id);
+            return this.InMemDB.Find(x => x.Id == id);
         }
 
-        public static void UpdatePayment(Guid id, string value)
+        public void UpdatePayment(Guid id, string value)
         {
             var payment = InMemDB.Find(x => x.Id == id);
-            InMemDB.Remove(payment);
+            this.InMemDB.Remove(payment);
             payment.Attributes.Currency = value;
-            InMemDB.Add(payment);
+            this.InMemDB.Add(payment);
         }
 
-        public static void CreatePayment(Guid id)
+        public void CreatePayment(Guid id)
         {
-            InMemDB.Add(new Payment { Id = id });
+            this.InMemDB.Add(new Payment { Id = id });
         }
 
-        public static void DeletePayment(Guid id)
+        public void DeletePayment(Guid id)
         {
-            InMemDB.Remove(InMemDB.Where(x => x.Id == id).Single());
+            this.InMemDB.Remove(InMemDB.Where(x => x.Id == id).Single());
         }
     }
 }

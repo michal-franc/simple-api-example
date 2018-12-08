@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using PaymentsSystemExample.Api.Services;
+
 namespace PaymentsSystemExample.Api
 {
     public class PaymentApiStartup
@@ -26,6 +28,11 @@ namespace PaymentsSystemExample.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            // Singleton at the begginging as this is a service using in mem collection at the moment
+            services.AddSingleton<IPaymentService, PaymentService>();
+            // Will change to Transient when we have a proper DB connection
+            //services.AddTransient<IPaymentService, PaymentService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

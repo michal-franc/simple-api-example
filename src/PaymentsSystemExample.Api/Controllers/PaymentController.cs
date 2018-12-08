@@ -8,13 +8,19 @@ using PaymentsSystemExample.Api.Services;
 
 namespace PaymentsSystemExample.Api.Controllers
 {
-
     [Route("api/[controller]")]
     [ApiController]
     public class PaymentController : ControllerBase
     {
+        private IPaymentService _paymentService;
+
+        public PaymentController(IPaymentService paymentService)
+        {
+            this._paymentService = paymentService;
+        }
+
         [HttpGet("{id}")]
-        public ActionResult<Payment> Get(string id)
+        public IActionResult Get(string id)
         {
             // TODO move this to action filter?
             var guid = this.TryConvertIdToGuid(id);
@@ -26,14 +32,14 @@ namespace PaymentsSystemExample.Api.Controllers
                 return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
             }
 
-            var payment = PaymentService.GetPayment(guid);
+            var payment = this._paymentService.GetPayment(guid);
 
             if(payment == null)
             {
                 return NotFound();
             }
 
-            return payment;
+            return Ok(payment);
         }
 
         [HttpPut("{id}")]
@@ -47,7 +53,7 @@ namespace PaymentsSystemExample.Api.Controllers
                 return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
             }
 
-            PaymentService.CreatePayment(guid);
+            this._paymentService.CreatePayment(guid);
 
             return Ok();
         }
@@ -63,7 +69,7 @@ namespace PaymentsSystemExample.Api.Controllers
                 return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
             }
 
-            PaymentService.UpdatePayment(guid, value);
+            this._paymentService.UpdatePayment(guid, value);
 
             return Ok();
         }
@@ -79,7 +85,7 @@ namespace PaymentsSystemExample.Api.Controllers
                 return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
             }
 
-            PaymentService.DeletePayment(guid);
+            this._paymentService.DeletePayment(guid);
 
             return Ok();
         }
