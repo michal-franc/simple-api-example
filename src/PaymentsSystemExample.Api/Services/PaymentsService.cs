@@ -7,12 +7,18 @@ namespace PaymentsSystemExample.Api.Services
 {
     public class ValidationErrors
     {
-        public IReadOnlyDictionary<string, string> Errors { get; set; }
+        private Dictionary<string, string> _errors;
+        public IReadOnlyDictionary<string, string> Errors => _errors;
         public bool HasErrors => Errors.Count > 0;
 
         public ValidationErrors()
         {
-            this.Errors = new Dictionary<string, string>();
+            _errors = new Dictionary<string, string>();
+        }
+
+        public void Add(string attribute, string error)
+        {
+            _errors.Add(attribute, error);
         }
     }
 

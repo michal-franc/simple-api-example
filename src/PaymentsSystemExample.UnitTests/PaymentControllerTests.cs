@@ -26,6 +26,23 @@ namespace PaymentsSystemExample.UnitTests
 
             result.Should().BeOfType<OkResult>();
         }
+
+        // We are just mocking this scenario and testing controller behaviour due to validation errors
+        [Fact]
+        public void AndThereIsAInvalidPayment_Return400_AndReturnValidationErrors()
+        {
+            var validationErrors = new ValidationErrors();
+            validationErrors.Add("amount", "incorrect value");
+
+            var paymentServiceMock = new Mock<IPaymentService>();
+            paymentServiceMock.Setup(x => x.CreatePayment(It.IsAny<string>())).Returns(validationErrors);
+
+            var sut = new PaymentController(paymentServiceMock.Object);
+
+            IActionResult result = sut.Put(string.Empty);
+
+            result.Should().BeOfType<BadRequestObjectResult>();
+        }
     }
 
     public class PaymentControllerTests_WhenCallingDelete
