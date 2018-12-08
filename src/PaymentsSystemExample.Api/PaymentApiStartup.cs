@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using PaymentsSystemExample.Api.Services;
+using PaymentsSystemExample.Domain.Adapters;
 
 namespace PaymentsSystemExample.Api
 {
@@ -33,6 +34,7 @@ namespace PaymentsSystemExample.Api
             services.AddSingleton<IPaymentService, PaymentService>();
             // Will change to Transient when we have a proper DB connection
             //services.AddTransient<IPaymentService, PaymentService>();
+            services.AddSingleton<IPaymentParser, PaymentParserJson>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

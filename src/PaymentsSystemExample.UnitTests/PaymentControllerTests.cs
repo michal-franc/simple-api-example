@@ -18,7 +18,7 @@ namespace PaymentsSystemExample.UnitTests
         {
             var noValidationErrors = new ValidationErrors();
             var paymentServiceMock = new Mock<IPaymentService>();
-            paymentServiceMock.Setup(x => x.UpdatePayment(It.IsAny<string>())).Returns(noValidationErrors);
+            paymentServiceMock.Setup(x => x.UpdatePayment(It.IsAny<string>(), It.IsAny<string>())).Returns(noValidationErrors);
 
             var sut = new PaymentController(paymentServiceMock.Object);
 
@@ -35,7 +35,7 @@ namespace PaymentsSystemExample.UnitTests
             validationErrors.Add("amount", "incorrect value");
 
             var paymentServiceMock = new Mock<IPaymentService>();
-            paymentServiceMock.Setup(x => x.UpdatePayment(It.IsAny<string>())).Returns(validationErrors);
+            paymentServiceMock.Setup(x => x.UpdatePayment(It.IsAny<string>(), It.IsAny<string>())).Returns(validationErrors);
 
             var sut = new PaymentController(paymentServiceMock.Object);
 
@@ -52,7 +52,7 @@ namespace PaymentsSystemExample.UnitTests
         {
             var noValidationErrors = new ValidationErrors();
             var paymentServiceMock = new Mock<IPaymentService>();
-            paymentServiceMock.Setup(x => x.CreatePayment(It.IsAny<string>())).Returns(noValidationErrors);
+            paymentServiceMock.Setup(x => x.CreatePayment(It.IsAny<string>(), It.IsAny<string>())).Returns(noValidationErrors);
 
             var sut = new PaymentController(paymentServiceMock.Object);
 
@@ -69,7 +69,7 @@ namespace PaymentsSystemExample.UnitTests
             validationErrors.Add("amount", "incorrect value");
 
             var paymentServiceMock = new Mock<IPaymentService>();
-            paymentServiceMock.Setup(x => x.CreatePayment(It.IsAny<string>())).Returns(validationErrors);
+            paymentServiceMock.Setup(x => x.CreatePayment(It.IsAny<string>(), It.IsAny<string>())).Returns(validationErrors);
 
             var sut = new PaymentController(paymentServiceMock.Object);
 

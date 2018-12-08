@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace PaymentsSystemExample.Domain.Adapters.CustomJsonConverters
 {
-    class PaymentAmountConverter: JsonConverter
+    internal class PaymentAmountConverter: JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {

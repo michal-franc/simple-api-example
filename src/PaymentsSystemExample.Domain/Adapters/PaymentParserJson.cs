@@ -8,7 +8,7 @@ using PaymentsSystemExample.Domain.Adapters.CustomJsonConverters;
 namespace PaymentsSystemExample.Domain.Adapters
 {
     // TODO: This has to be singleton injected
-    public class PaymentMapperJson : IPaymentMapper
+    public class PaymentParserJson : IPaymentParser
     {
         // Outside of this class we wont need to change the parsing errors collection -> changing only to enumeration
         // This does not support validation per payment object
@@ -19,12 +19,16 @@ namespace PaymentsSystemExample.Domain.Adapters
 
         // ICollection removes ability to sort (we wont need sorting in this context so I am hiding this ability)
         private ICollection<string> _parsingErrors;
-        private JsonSerializerSettings _serializerSettings;
 
-        public PaymentMapperJson(string cultureCode)
+        public PaymentParserJson()
         {
             _parsingErrors = new List<string>();
-            _serializerSettings = new JsonSerializerSettings
+        }
+
+        public IEnumerable<Payment> Parse(string rawJson, string cultureCode)
+        {
+            // I had to move settings initialization here as i want to create multi tenant app that cculture is configured per request
+            var serializerSettings = new JsonSerializerSettings
             { 
                 // I would catch here first basic validations - like timezone in date, amount decimal separator, id not being a guid etc
                 // Things like is this a correct currency code, or number code this would be a more Domain validation
@@ -36,14 +40,12 @@ namespace PaymentsSystemExample.Domain.Adapters
                 },
                 Culture = new CultureInfo(cultureCode),
                 // As this is singleton for the global scope maintaned by container I am not worried about creating this objects.
+                // TODO: move this converters to fields
                 Converters = new List<JsonConverter> { new PaymentAmountConverter(), new ProcessingDateConverter() },
                 DateFormatHandling = DateFormatHandling.IsoDateFormat
             };
-        }
 
-        public IEnumerable<Payment> Map(string rawJson)
-        {
-            return JsonConvert.DeserializeObject<PaymentRoot>(rawJson, _serializerSettings).Data;
+            return JsonConvert.DeserializeObject<PaymentRoot>(rawJson, serializerSettings).Data;
         }
     }
 }

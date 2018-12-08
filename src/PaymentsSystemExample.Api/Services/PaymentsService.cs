@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using PaymentsSystemExample.Domain.Adapters.JsonObjects;
+using PaymentsSystemExample.Domain.Adapters;
 
 namespace PaymentsSystemExample.Api.Services
 {
@@ -26,19 +27,21 @@ namespace PaymentsSystemExample.Api.Services
     {
         Payment GetPayment(Guid id);
         //TODO: pluralise
-        ValidationErrors UpdatePayment(string paymentsRawData);
+        ValidationErrors UpdatePayment(string rawPaymentsData, string cultureCode);
         //TODO: pluralise
-        ValidationErrors CreatePayment(string paymentsRawData);
+        ValidationErrors CreatePayment(string rawPaymentsData, string cultureCode);
         bool DeletePayment(Guid id);
     }
 
     public class PaymentService : IPaymentService
     {
         private readonly List<Payment> InMemDB;
+        private IPaymentParser _paymentParser;
 
-        public PaymentService()
+        public PaymentService(IPaymentParser paymentsParser)
         {
             this.InMemDB = new List<Payment>();
+            _paymentParser = paymentsParser;
         }
 
         public Payment GetPayment(Guid id)
@@ -46,18 +49,26 @@ namespace PaymentsSystemExample.Api.Services
             return this.InMemDB.Find(x => x.Id == id);
         }
 
-        public ValidationErrors UpdatePayment(string paymentsRawData)
+        public ValidationErrors UpdatePayment(string rawPaymentsData, string cultureCode)
         {
             return new ValidationErrors();
         }
 
-        public ValidationErrors CreatePayment(string paymentsRawData)
+        public ValidationErrors CreatePayment(string rawPaymentsData, string cultureCode)
         {
-            var payment = new Payment();
+            var payments = _paymentParser.Parse(rawPaymentsData, cultureCode);
+
+            if(_paymentParser.HasErrors)
+            {
+                return new ValidationErrors();
+            }
+
+            var payment = payments.First();
             this.InMemDB.Add(payment);
             return new ValidationErrors();
         }
 
+        // TODO: should we support bulk delete?
         public bool DeletePayment(Guid id)
         {
             if(InMemDB.Any(x => x.Id == id))

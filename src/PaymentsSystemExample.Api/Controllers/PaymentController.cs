@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using PaymentsSystemExample.Domain.Adapters;
 using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 using PaymentsSystemExample.Api.Services;
 
@@ -63,7 +64,9 @@ namespace PaymentsSystemExample.Api.Controllers
             // TODO: lack of dicards - lower the amount of data sent with retry as user doesnt have to sent it again but they need to deduplicate it
             // TODO: users would probably retry the whole package ... so i will assume dicards whole set
             // TODO: return validation errors and display them
-            var result = this._paymentService.CreatePayment(paymentsRawData);
+
+            // TODO: culture needs to com from header
+            var result = _paymentService.CreatePayment(paymentsRawData, "en-GB");
 
             if(result.HasErrors)
             {
@@ -84,8 +87,7 @@ namespace PaymentsSystemExample.Api.Controllers
         {
             // TODO: as with PUT - we need to verify if the version was not changed and if all validations pass
             // TODO: if it is not truth we discard whole request
-
-            var result = this._paymentService.UpdatePayment(paymentsRawData);
+            var result = this._paymentService.UpdatePayment(paymentsRawData, "en-GB");
 
             if(result.HasErrors)
             {

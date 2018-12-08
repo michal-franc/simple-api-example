@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using System.Globalization;
 using Xunit;
 using FluentAssertions;
@@ -9,9 +10,12 @@ using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 namespace PaymentsSystemExample.UnitTests
 {
     // Helper class for test so we dont have to write en-GB in all the tests
-    public class PaymentMapperJsonGB : PaymentMapperJson
+    internal class PaymentParserJsonGB : PaymentParserJson
     {
-        public PaymentMapperJsonGB(): base("en-GB") {}
+        public IEnumerable<Payment> Parse(string rawData)
+        {
+            return base.Parse(rawData, "en-GB");
+        }
     }
 
     internal static class TestHelper 
@@ -48,7 +52,7 @@ namespace PaymentsSystemExample.UnitTests
         [InlineData("sponsor")]
         public void ForParty_TheFieldsAreCorrectlyMapped(string partyType)
         {
-            var sut = new PaymentMapperJsonGB();
+            var sut = new PaymentParserJsonGB();
             var testAccountName = "accountName";
             var testAccountNumber = "accountNumber";
             var testAccountNumberCode = "accountNumberCode";
@@ -75,7 +79,7 @@ namespace PaymentsSystemExample.UnitTests
                 }}]
             }}";
 
-            var resultPayment = sut.Map(testJson);
+            var resultPayment = sut.Parse(testJson);
 
             sut.HasErrors.Should().Be(false);
 
@@ -111,7 +115,7 @@ namespace PaymentsSystemExample.UnitTests
     // I am not validating domain here just checking if this fields are correctly mapped
     // This kind of test could be handled by json schema
     // This test could be an overkill but is also usefull to make sure that we follow the contract.
-    public class WhenMappingPaymentStringBasedFields
+    public class WhenParsingPaymentStringBasedFields
     {
         // This is one method to test multiple parsing values
         [Theory]
@@ -125,9 +129,9 @@ namespace PaymentsSystemExample.UnitTests
         [InlineData("reference", "Reference")]
         [InlineData("scheme_payment_sub_type", "SchemeSubType")]
         [InlineData("scheme_payment_type", "SchemeType")]
-        public void TheFieldsAreCorrectlyMapped(string sourceField, string targetField)
+        public void TheFieldsAreCorrectlyParsed(string sourceField, string targetField)
         {
-            var sut = new PaymentMapperJsonGB();
+            var sut = new PaymentParserJsonGB();
             var expectedValue = $"test - data {targetField}";
 
             var testJson = $@"{{
@@ -138,7 +142,7 @@ namespace PaymentsSystemExample.UnitTests
                 }}]
             }}";
 
-            var resultPayment = sut.Map(testJson);
+            var resultPayment = sut.Parse(testJson);
 
             sut.HasErrors.Should().Be(false);
             expectedValue.Should().Be(TestHelper.GetStringValueUsingFieldName(targetField, resultPayment.First().Attributes));
@@ -153,12 +157,12 @@ namespace PaymentsSystemExample.UnitTests
 
     // At the beggingign with date i was consfused why there is no timezone but check to the api revealeed that
     // Format is deliberately mentioned
-    public class WhenMappingPaymentProcessingDateFromJsonTests
+    public class WhenParsingPaymentProcessingDateFromJsonTests
     {
         [Fact]
         public void AndDateTimeFormatIsValid_ThenReturnPayment_AndNoParsingErrors()
         {
-            var sut = new PaymentMapperJsonGB();
+            var sut = new PaymentParserJsonGB();
             var expectedDate = "2017-01-18";
             var expectedFormat = "yyyy-MM-dd";
 
@@ -170,7 +174,7 @@ namespace PaymentsSystemExample.UnitTests
                 }}]
             }}";
 
-            var resultPayment = sut.Map(testJson);
+            var resultPayment = sut.Parse(testJson);
 
             sut.HasErrors.Should().Be(false);
             expectedDate.Should().Be(resultPayment.First().Attributes.ProcessingDate.ToString(expectedFormat));
@@ -179,7 +183,7 @@ namespace PaymentsSystemExample.UnitTests
         [Fact]
         public void AndDateTimeWithMinutesAndHours_IsInValid_ThenReturnPayment_AndParsingErrors()
         {
-            var sut = new PaymentMapperJsonGB();
+            var sut = new PaymentParserJsonGB();
             var expectedDate = "2017-01-18 10:10:10";
 
             var testJson = $@"{{
@@ -190,14 +194,14 @@ namespace PaymentsSystemExample.UnitTests
                 }}]
             }}";
 
-            var resultPayment = sut.Map(testJson);
+            var resultPayment = sut.Parse(testJson);
             sut.HasErrors.Should().Be(true);
         }
 
         [Fact]
         public void AndDateInDiffernetFormat_ThenReturnPayment_AndParsingErrors()
         {
-            var sut = new PaymentMapperJsonGB();
+            var sut = new PaymentParserJsonGB();
             var expectedDate = "2017-18-01";
 
             var testJson = $@"{{
@@ -208,7 +212,7 @@ namespace PaymentsSystemExample.UnitTests
                 }}]
             }}";
 
-            var resultPayment = sut.Map(testJson);
+            var resultPayment = sut.Parse(testJson);
             sut.HasErrors.Should().Be(true);
         }
     }
@@ -222,7 +226,7 @@ namespace PaymentsSystemExample.UnitTests
         [Fact]
         public void AndAmountIsValid_ThenReturnPayment_AndNoParsingErrors()
         {
-            var sut = new PaymentMapperJsonGB();
+            var sut = new PaymentParserJsonGB();
             var expectedAmount = 100.21m;
 
             var testJson = $@"{{
@@ -233,7 +237,7 @@ namespace PaymentsSystemExample.UnitTests
                 }}]
             }}";
 
-            var resultPayment = sut.Map(testJson);
+            var resultPayment = sut.Parse(testJson);
             expectedAmount.Should().Be(resultPayment.First().Attributes.Amount);
             sut.HasErrors.Should().Be(false);
         }
@@ -241,7 +245,7 @@ namespace PaymentsSystemExample.UnitTests
         [Fact]
         public void AndInvalidDecimalSeparator_ThenReturnPayment_WithParsingErrors()
         {
-            var sut = new PaymentMapperJsonGB();
+            var sut = new PaymentParserJsonGB();
             var expectedAmount = "100,21";
 
             var testJson = $@"{{
@@ -252,7 +256,7 @@ namespace PaymentsSystemExample.UnitTests
                 }}]
             }}";
 
-            var resultPayment = sut.Map(testJson);
+            var resultPayment = sut.Parse(testJson);
             sut.HasErrors.Should().Be(true);
         }
 
@@ -260,7 +264,7 @@ namespace PaymentsSystemExample.UnitTests
         public void WithCommaSeparatedCulture_RetunrPayment_AndNoParsingErrors()
         {
             var testCulture = "nl-BE";
-            var sut = new PaymentMapperJson(testCulture);
+            var sut = new PaymentParserJson();
             var expectedAmount = "100,21";
 
             var testJson = $@"{{
@@ -271,7 +275,7 @@ namespace PaymentsSystemExample.UnitTests
                 }}]
             }}";
 
-            var resultPayment = sut.Map(testJson);
+            var resultPayment = sut.Parse(testJson, testCulture);
             sut.HasErrors.Should().Be(false);
             expectedAmount.Should().Be(resultPayment.First().Attributes.Amount.ToString(CultureInfo.CreateSpecificCulture(testCulture)));
         }
