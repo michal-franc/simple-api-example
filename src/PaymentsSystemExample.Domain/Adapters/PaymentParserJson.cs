@@ -39,9 +39,6 @@ namespace PaymentsSystemExample.Domain.Adapters
                     args.ErrorContext.Handled = true;
                 },
                 Culture = new CultureInfo(cultureCode),
-                // As this is singleton for the global scope maintaned by container I am not worried about creating this objects.
-                // TODO: move this converters to fields
-                Converters = new List<JsonConverter> { new PaymentAmountConverter(), new ProcessingDateConverter() },
                 DateFormatHandling = DateFormatHandling.IsoDateFormat
             };
 

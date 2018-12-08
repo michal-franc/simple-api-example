@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using PaymentsSystemExample.Domain.Adapters.CustomJsonConverters;
 
 namespace PaymentsSystemExample.Domain.Adapters.JsonObjects
 {
@@ -10,9 +11,11 @@ namespace PaymentsSystemExample.Domain.Adapters.JsonObjects
         public string Id { get; set; }
 
         [JsonProperty("amount")]
+        [JsonConverter(typeof(PaymentAmountConverter))]
         public decimal Amount { get; set; }
 
         [JsonProperty("processing_date")]
+        [JsonConverter(typeof(ProcessingDateConverter))]
         public DateTime ProcessingDate { get; set; }
 
         [JsonProperty("currency")]
