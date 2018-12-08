@@ -71,7 +71,7 @@ namespace PaymentsSystemExample.Api.Controllers
             // TODO: return validation errors and display them
 
             // TODO: culture needs to com from header
-            var result = _paymentService.CreatePayment(paymentsRawData, "en-GB");
+            var result = _paymentService.CreatePayments(paymentsRawData, "en-GB");
 
             if(result.HasErrors)
             {
@@ -97,7 +97,7 @@ namespace PaymentsSystemExample.Api.Controllers
 
             // TODO: as with PUT - we need to verify if the version was not changed and if all validations pass
             // TODO: if it is not truth we discard whole request
-            var result = this._paymentService.UpdatePayment(paymentsRawData, "en-GB");
+            var result = this._paymentService.UpdatePayments(paymentsRawData, "en-GB");
 
             if(result.HasErrors)
             {
