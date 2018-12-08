@@ -16,13 +16,16 @@ namespace PaymentsSystemExample.UnitTests
         [Fact]
         public void AndThereIsAValidPayment_Return200_AndUpdatePayment()
         {
+            var cultureCode = "en-GB";
+            var rawPayment = string.Empty;
+
             var noValidationErrors = new ValidationErrors();
             var paymentServiceMock = new Mock<IPaymentService>();
             paymentServiceMock.Setup(x => x.UpdatePayment(It.IsAny<string>(), It.IsAny<string>())).Returns(noValidationErrors);
 
             var sut = new PaymentController(paymentServiceMock.Object);
 
-            var result = sut.Post(string.Empty);
+            var result = sut.Post(rawPayment, cultureCode);
 
             result.Should().BeOfType<OkResult>();
         }
@@ -31,6 +34,9 @@ namespace PaymentsSystemExample.UnitTests
         [Fact]
         public void AndThereIsAInvalidPayment_Return400_AndReturnValidationErrors()
         {
+            var cultureCode = "en-GB";
+            var rawPayment = string.Empty;
+
             var validationErrors = new ValidationErrors();
             validationErrors.Add("amount", "incorrect value");
 
@@ -39,7 +45,23 @@ namespace PaymentsSystemExample.UnitTests
 
             var sut = new PaymentController(paymentServiceMock.Object);
 
-            IActionResult result = sut.Post(string.Empty);
+            IActionResult result = sut.Post(rawPayment, cultureCode);
+
+            result.Should().BeOfType<BadRequestObjectResult>();
+        }
+
+        [Fact]
+        public void AndThereIsNoCultureCode_ThenBadRequest()
+        {
+            var cultureCode = string.Empty;
+            var rawPayment = string.Empty;
+
+            var noValidationErrors = new ValidationErrors();
+            var paymentServiceMock = new Mock<IPaymentService>();
+
+            var sut = new PaymentController(paymentServiceMock.Object);
+
+            var result = sut.Post(rawPayment, cultureCode);
 
             result.Should().BeOfType<BadRequestObjectResult>();
         }
@@ -50,13 +72,16 @@ namespace PaymentsSystemExample.UnitTests
         [Fact]
         public void AndThereIsAValidPayment_Return200_AndSavePayment()
         {
+            var cultureCode = "en-GB";
+            var rawPayment = string.Empty;
+
             var noValidationErrors = new ValidationErrors();
             var paymentServiceMock = new Mock<IPaymentService>();
             paymentServiceMock.Setup(x => x.CreatePayment(It.IsAny<string>(), It.IsAny<string>())).Returns(noValidationErrors);
 
             var sut = new PaymentController(paymentServiceMock.Object);
 
-            var result = sut.Put(string.Empty);
+            var result = sut.Put(rawPayment, cultureCode);
 
             result.Should().BeOfType<OkResult>();
         }
@@ -65,6 +90,9 @@ namespace PaymentsSystemExample.UnitTests
         [Fact]
         public void AndThereIsAInvalidPayment_Return400_AndReturnValidationErrors()
         {
+            var cultureCode = "en-GB";
+            var rawPayment = string.Empty;
+
             var validationErrors = new ValidationErrors();
             validationErrors.Add("amount", "incorrect value");
 
@@ -73,7 +101,23 @@ namespace PaymentsSystemExample.UnitTests
 
             var sut = new PaymentController(paymentServiceMock.Object);
 
-            IActionResult result = sut.Put(string.Empty);
+            IActionResult result = sut.Put(rawPayment, cultureCode);
+
+            result.Should().BeOfType<BadRequestObjectResult>();
+        }
+
+        [Fact]
+        public void AndThereIsNoCultureCode_ThenBadRequest()
+        {
+            var cultureCode = string.Empty;
+            var rawPayment = string.Empty;
+
+            var noValidationErrors = new ValidationErrors();
+            var paymentServiceMock = new Mock<IPaymentService>();
+
+            var sut = new PaymentController(paymentServiceMock.Object);
+
+            var result = sut.Put(rawPayment, cultureCode);
 
             result.Should().BeOfType<BadRequestObjectResult>();
         }

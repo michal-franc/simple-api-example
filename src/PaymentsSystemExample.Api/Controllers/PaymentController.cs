@@ -48,8 +48,13 @@ namespace PaymentsSystemExample.Api.Controllers
 
         [HttpPut]
         // TODO: not void here but return a message succesfull or something + 200
-        public ActionResult Put(string paymentsRawData)
+        public ActionResult Put(string paymentsRawData, [FromHeader(Name = "X-CultureCode")] string cultureCode)
         {
+            if(string.IsNullOrWhiteSpace(cultureCode))
+            {
+                return BadRequest("X-CultureCode header missing.");
+            }
+
             // TODO: support for more payments than one
             // TODO: move this to action filter?
             // TODO: This should be checked in the Domain validation process
@@ -83,8 +88,13 @@ namespace PaymentsSystemExample.Api.Controllers
         //TODO!!: service should operate with domain objects not raw string
 
         [HttpPost]
-        public ActionResult Post(string paymentsRawData)
+        public ActionResult Post(string paymentsRawData, [FromHeader (Name = "X-CultureCode")]string cultureCode)
         {
+            if(string.IsNullOrWhiteSpace(cultureCode))
+            {
+                return BadRequest("X-CultureCode header missing.");
+            }
+
             // TODO: as with PUT - we need to verify if the version was not changed and if all validations pass
             // TODO: if it is not truth we discard whole request
             var result = this._paymentService.UpdatePayment(paymentsRawData, "en-GB");
