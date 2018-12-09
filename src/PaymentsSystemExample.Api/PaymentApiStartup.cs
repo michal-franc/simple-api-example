@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using PaymentsSystemExample.Api.Formatters;
 using PaymentsSystemExample.Api.Services;
 using PaymentsSystemExample.Domain.Adapters;
 
@@ -28,7 +29,10 @@ namespace PaymentsSystemExample.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc(options =>
+            {
+                options.InputFormatters.Insert(0, new RawJsonBodyInputFormatter());
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             // Singleton at the begginging as this is a service using in mem collection at the moment
             services.AddSingleton<IPaymentService, PaymentService>();
