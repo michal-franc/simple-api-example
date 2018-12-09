@@ -119,7 +119,7 @@ namespace PaymentsSystemExample.Api.Controllers
         }
 
         [HttpPatch]
-        public async Task<ActionResult> HttpPatch()
+        public ActionResult HttpPatch()
         {
             //TODO: implement if there is time :)
             return NotFound();
