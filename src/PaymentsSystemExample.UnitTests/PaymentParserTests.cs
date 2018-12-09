@@ -9,40 +9,7 @@ using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 
 namespace PaymentsSystemExample.UnitTests
 {
-    // Helper class for test so we dont have to write en-GB in all the tests
-    internal class PaymentParserJsonGB : PaymentParserJson
-    {
-        public IEnumerable<Payment> Parse(string rawData)
-        {
-            return base.Parse(rawData, "en-GB");
-        }
-    }
-
-    internal static class TestHelper 
-    {
-        public static string GetStringValueUsingFieldName(string fieldName, object obj)
-        {
-            var property = obj.GetType().GetProperty(fieldName);
-
-            // For nicer message in failing unit tests
-            if(property == null)
-            {
-                throw new Exception($"Property {fieldName} not found in {obj.GetType()}");
-            }
-
-            var value = property.GetValue(obj, null);
-
-            if(value == null)
-            {
-                throw new Exception($"Value for field {fieldName} not found in {obj.GetType()}. Potential mapping problem on JsonProp level.");
-            }
-
-            return value.ToString();
-        }
-    }
-
-
-    // I Would similar FX, Charges informatioon and sender charges test
+    // TODO: I Would similar tests for FX, Charges informatioon and sender charges test
     // But omiting it now
     public class WhenParsingParty
     {
@@ -280,4 +247,38 @@ namespace PaymentsSystemExample.UnitTests
             expectedAmount.Should().Be(resultPayment.First().Attributes.Amount.ToString(CultureInfo.CreateSpecificCulture(testCulture)));
         }
     }
+
+    // Helper class for test so we dont have to write en-GB in all the tests
+    internal class PaymentParserJsonGB : PaymentParserJson
+    {
+        public IEnumerable<Payment> Parse(string rawData)
+        {
+            return base.Parse(rawData, "en-GB");
+        }
+    }
+
+    internal static class TestHelper 
+    {
+        public static string GetStringValueUsingFieldName(string fieldName, object obj)
+        {
+            var property = obj.GetType().GetProperty(fieldName);
+
+            // For nicer message in failing unit tests
+            if(property == null)
+            {
+                throw new Exception($"Property {fieldName} not found in {obj.GetType()}");
+            }
+
+            var value = property.GetValue(obj, null);
+
+            if(value == null)
+            {
+                throw new Exception($"Value for field {fieldName} not found in {obj.GetType()}. Potential mapping problem on JsonProp level.");
+            }
+
+            return value.ToString();
+        }
+    }
+
+
 }
