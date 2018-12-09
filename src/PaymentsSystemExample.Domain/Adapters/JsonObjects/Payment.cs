@@ -10,7 +10,7 @@ namespace PaymentsSystemExample.Domain.Adapters.JsonObjects
         public int Version { get; set; }
 
         [JsonProperty("organisation_id")]
-        public string OrganisationId { get; set; }
+        public Guid OrganisationId { get; set; }
 
         [JsonProperty("attributes")]
         public Attributes Attributes { get; set; }
