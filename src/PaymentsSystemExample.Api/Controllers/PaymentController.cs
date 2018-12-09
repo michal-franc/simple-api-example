@@ -10,7 +10,7 @@ using PaymentsSystemExample.Api.Extensions;
 
 namespace PaymentsSystemExample.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class PaymentController : ControllerBase
     {
