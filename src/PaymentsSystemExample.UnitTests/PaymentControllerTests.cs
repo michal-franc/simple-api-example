@@ -8,6 +8,7 @@ using Moq;
 using PaymentsSystemExample.Api.Services;
 using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace PaymentsSystemExample.UnitTests
 {
@@ -171,37 +172,37 @@ namespace PaymentsSystemExample.UnitTests
     public class PaymentControllerTests_WhenCallingGet
     {
         [Fact]
-        public void AndThereIsNoPayment_ThenReturn404()
+        public async Task AndThereIsNoPayment_ThenReturn404()
         {
             var nonExistingPaymentId = Guid.NewGuid();
             var paymentServiceMock = new Mock<IPaymentService>();
             var sut = new PaymentController(paymentServiceMock.Object);
 
-            var result = sut.Get(nonExistingPaymentId.ToString());
+            var result = await sut.Get(nonExistingPaymentId.ToString());
 
             result.Should().BeOfType<NotFoundResult>();
         }
 
         [Fact]
-        public void AndThereIsAPayment_ThenReturn200_and_thePayment()
+        public async Task AndThereIsAPayment_ThenReturn200_and_thePayment()
         {
             var existingPaymentId = Guid.NewGuid();
             var paymentServiceMock = new Mock<IPaymentService>();
-            paymentServiceMock.Setup(x => x.GetPayment(existingPaymentId)).Returns(new Payment { Id = existingPaymentId });
+            paymentServiceMock.Setup(x => x.GetPayment(existingPaymentId)).ReturnsAsync(new Payment { Id = existingPaymentId });
             var sut = new PaymentController(paymentServiceMock.Object);
 
-            var result = sut.Get(existingPaymentId.ToString());
+            var result = await sut.Get(existingPaymentId.ToString());
 
             result.Should().BeOfType<OkObjectResult>();
         }
 
         [Fact]
-        public void AndTheIdIsIncorrect_ThenReturnBadRequest()
+        public async Task AndTheIdIsIncorrect_ThenReturnBadRequest()
         {
             var nonGuidId = "testtesttest";
             var sut = new PaymentController(null);
 
-            var result = sut.Get(nonGuidId);
+            var result = await sut.Get(nonGuidId);
 
             result.Should().BeOfType<BadRequestObjectResult>();
         }
