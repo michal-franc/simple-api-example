@@ -9,18 +9,26 @@ namespace PaymentsSystemExample.Api.Services
 {
     public class ValidationErrors
     {
-        private Dictionary<string, string> _errors;
-        public IReadOnlyDictionary<string, string> Errors => _errors;
-        public bool HasErrors => Errors.Count > 0;
+        private List<string> _parsingErrors;
+        private Dictionary<string, string> _domainErrors;
+        public IEnumerable<string> ParsingErrors => _parsingErrors;
+        public IReadOnlyDictionary<string, string> DomainErrors => _domainErrors;
+        public bool HasErrors => _parsingErrors.Count > 0 || _domainErrors.Count > 0;
 
         public ValidationErrors()
         {
-            _errors = new Dictionary<string, string>();
+            _parsingErrors= new List<string>();
+            _domainErrors = new Dictionary<string, string>();
         }
 
-        public void Add(string attribute, string error)
+        public void AddParsingError(string error)
         {
-            _errors.Add(attribute, error);
+            _parsingErrors.Add(error);
+        }
+        
+        public void AddDomainError(string attribute, string error)
+        {
+            _domainErrors.Add(attribute, error);
         }
     }
 
@@ -30,19 +38,17 @@ namespace PaymentsSystemExample.Api.Services
     {
         Task<Payment> GetPayment(Guid id);
         ValidationErrors UpdatePayments(string rawPaymentsData, string cultureCode);
-        ValidationErrors CreatePayments(string rawPaymentsData, string cultureCode);
+        Task<ValidationErrors> CreatePayments(string rawPaymentsData, string cultureCode);
         Task<bool> DeletePayment(Guid id);
     }
 
     public class PaymentService : IPaymentService
     {
-        private readonly List<Payment> InMemDB;
         private IPaymentParser _paymentParser;
         private IPaymentPersistenceService _paymentPersistenceService;
 
         public PaymentService(IPaymentParser paymentsParser, IPaymentPersistenceService paymentPersistenceService)
         {
-            this.InMemDB = new List<Payment>();
             _paymentParser = paymentsParser;
             _paymentPersistenceService = paymentPersistenceService;
         }
@@ -62,18 +68,35 @@ namespace PaymentsSystemExample.Api.Services
             return new ValidationErrors();
         }
 
-        public ValidationErrors CreatePayments(string rawPaymentsData, string cultureCode)
+        public async Task<ValidationErrors> CreatePayments(string rawPaymentsData, string cultureCode)
         {
+            var validationErrors = new ValidationErrors();
+
             var payments = _paymentParser.Parse(rawPaymentsData, cultureCode);
 
             if(_paymentParser.HasErrors)
             {
-                return new ValidationErrors();
+                foreach(var parsingError in _paymentParser.ParsingErrors)
+                {
+                    validationErrors.AddParsingError(parsingError);
+                }
             }
 
-            var payment = payments.First();
-            this.InMemDB.Add(payment);
-            return new ValidationErrors();
+            foreach(var payment in payments)
+            {
+                //var domainErrors = payment.Validate();
+                //foreach(var domainError in domainErrors)
+                //{
+                //   validationErrors.AddDomainError(domainError.paymentId, domainError.attribute, domainError.error);
+                //}
+            }
+
+            if(!validationErrors.HasErrors)
+            {
+                _paymentPersistenceService.Create(payments);
+            }
+
+            return validationErrors;
         }
 
         //TODO: organisation id has to be passed here so that we dont allow users to remove all the payments

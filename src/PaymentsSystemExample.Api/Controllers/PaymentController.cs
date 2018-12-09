@@ -49,7 +49,7 @@ namespace PaymentsSystemExample.Api.Controllers
         // Alternative solution - create the ones that are ok and return information which ones were faulty
         // This lowers the amount sent on 'retry' request
         [HttpPut]
-        public ActionResult Put(string paymentsRawData, [FromHeader(Name = "X-CultureCode")] string cultureCode)
+        public async Task<ActionResult> Put([FromBody]string content, [FromHeader(Name = "X-CultureCode")] string cultureCode)
         {
             if(string.IsNullOrWhiteSpace(cultureCode))
             {
@@ -58,7 +58,7 @@ namespace PaymentsSystemExample.Api.Controllers
 
             // TODO: return validation errors and display them
             // TODO: we need to verify if the version was not changed and if all validations pass
-            var result = _paymentService.CreatePayments(paymentsRawData, cultureCode);
+            var result = await _paymentService.CreatePayments(content, cultureCode);
 
             if(result.HasErrors)
             {

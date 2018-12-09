@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Globalization;
+using System.Collections.Generic;
 using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 using Amazon.Auth;
 using Amazon.DynamoDBv2;
@@ -13,6 +14,7 @@ namespace PaymentsSystemExample.Api.Services
     {
         Task<Payment> Get(Guid paymentid);
         Task<bool> Delete(Guid paymentid);
+        Task<bool> Create(IEnumerable<Payment> payments);
     }
 
     // TODO: Add Payment
@@ -35,36 +37,41 @@ namespace PaymentsSystemExample.Api.Services
             _client = new AmazonDynamoDBClient("test" , "test" , "test", config);
         }
 
-        public async Task<bool> Create(Payment payment)
+        public async Task<bool> Create(IEnumerable<Payment> payments)
         {
             try
             {
                 var table = Table.LoadTable(_client, "payments");
+                var batchWrite = table.CreateBatchWrite();
 
-                var document = new Document();
-                document["PaymentId"] = payment.Id;
-                document["OrganisationId"] = payment.OrganisationId;
-                document["Version"] = payment.Version;
-                document["Type"] = payment.Type;
-
-                var serializerSettings = new JsonSerializerSettings
+                foreach(var payment in payments)
                 {
-                    Culture = new CultureInfo("en-GB"),
-                    DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                    NullValueHandling = NullValueHandling.Ignore,
-                    StringEscapeHandling = StringEscapeHandling.Default,
-                    Formatting = Formatting.None
-                };
+                    var document = new Document();
+                    document["PaymentId"] = payment.Id;
+                    document["OrganisationId"] = payment.OrganisationId;
+                    document["Version"] = payment.Version;
+                    document["Type"] = payment.Type;
 
-                document["attributes"] = JsonConvert.SerializeObject(payment.Attributes, serializerSettings);
+                    var serializerSettings = new JsonSerializerSettings
+                    {
+                        Culture = new CultureInfo("en-GB"),
+                        DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                        NullValueHandling = NullValueHandling.Ignore,
+                        StringEscapeHandling = StringEscapeHandling.Default,
+                        Formatting = Formatting.None
+                    };
 
-                await table.PutItemAsync(document);
+                    document["attributes"] = JsonConvert.SerializeObject(payment.Attributes, serializerSettings);
+
+                    batchWrite.AddDocumentToPut(document);
+                }
+
+                await batchWrite.ExecuteAsync();
                 return true;
             }
-            // TODO make this more specific exception
-            catch (System.Exception ex)
+            catch (System.Exception)
             {
-                throw ex;
+                throw;
             }
         }
 

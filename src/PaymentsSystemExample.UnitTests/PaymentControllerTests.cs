@@ -39,7 +39,7 @@ namespace PaymentsSystemExample.UnitTests
             var rawPayment = string.Empty;
 
             var validationErrors = new ValidationErrors();
-            validationErrors.Add("amount", "incorrect value");
+            validationErrors.AddParsingError("amount incorrect value");
 
             var paymentServiceMock = new Mock<IPaymentService>();
             paymentServiceMock.Setup(x => x.UpdatePayments(It.IsAny<string>(), It.IsAny<string>())).Returns(validationErrors);
@@ -74,44 +74,44 @@ namespace PaymentsSystemExample.UnitTests
     public class PaymentControllerTests_WhenCallingPut
     {
         [Fact]
-        public void AndThereIsAValidPayment_Return200_AndSavePayment()
+        public async Task AndThereIsAValidPayment_Return200_AndSavePayment()
         {
             var cultureCode = "en-GB";
             var rawPayment = string.Empty;
 
             var noValidationErrors = new ValidationErrors();
             var paymentServiceMock = new Mock<IPaymentService>();
-            paymentServiceMock.Setup(x => x.CreatePayments(It.IsAny<string>(), It.IsAny<string>())).Returns(noValidationErrors);
+            paymentServiceMock.Setup(x => x.CreatePayments(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(noValidationErrors);
 
             var sut = new PaymentController(paymentServiceMock.Object);
 
-            var result = sut.Put(rawPayment, cultureCode);
+            var result = await sut.Put(rawPayment, cultureCode);
 
             result.Should().BeOfType<OkResult>();
         }
 
         // We are just mocking this scenario and testing controller behaviour due to validation errors
         [Fact]
-        public void AndThereIsAInvalidPayment_Return400_AndReturnValidationErrors()
+        public async Task AndThereIsAInvalidPayment_Return400_AndReturnValidationErrors()
         {
             var cultureCode = "en-GB";
             var rawPayment = string.Empty;
 
             var validationErrors = new ValidationErrors();
-            validationErrors.Add("amount", "incorrect value");
+            validationErrors.AddParsingError("amount: incorrect value");
 
             var paymentServiceMock = new Mock<IPaymentService>();
-            paymentServiceMock.Setup(x => x.CreatePayments(It.IsAny<string>(), It.IsAny<string>())).Returns(validationErrors);
+            paymentServiceMock.Setup(x => x.CreatePayments(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(validationErrors);
 
             var sut = new PaymentController(paymentServiceMock.Object);
 
-            IActionResult result = sut.Put(rawPayment, cultureCode);
+            IActionResult result = await sut.Put(rawPayment, cultureCode);
 
             result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         [Fact]
-        public void AndThereIsNoCultureCode_ThenBadRequest()
+        public async Task AndThereIsNoCultureCode_ThenBadRequest()
         {
             var cultureCode = string.Empty;
             var rawPayment = string.Empty;
@@ -121,7 +121,7 @@ namespace PaymentsSystemExample.UnitTests
 
             var sut = new PaymentController(paymentServiceMock.Object);
 
-            var result = sut.Put(rawPayment, cultureCode);
+            var result = await sut.Put(rawPayment, cultureCode);
             result.Should().BeOfType<BadRequestObjectResult>();
 
             var badRequestObjectResult = (BadRequestObjectResult)result;
