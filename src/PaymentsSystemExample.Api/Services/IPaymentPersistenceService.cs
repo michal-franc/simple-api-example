@@ -72,8 +72,8 @@ namespace PaymentsSystemExample.Api.Services
         public async Task<bool> Delete(Guid paymentId)
         {
             var table = Table.LoadTable(_client, "payments");
-            await table.DeleteItemAsync(paymentId);
-            return true;
+            var result = await table.DeleteItemAsync(paymentId);
+            return result != null;
         }
 
         public async Task<Payment> Get(Guid paymentId)
