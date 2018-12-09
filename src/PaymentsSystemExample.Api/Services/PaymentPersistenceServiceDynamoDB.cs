@@ -78,6 +78,39 @@ namespace PaymentsSystemExample.Api.Services
             }
         }
 
+        public async Task<IEnumerable<Payment>> List(Guid organisationId)
+        {
+            try
+            {
+                var paymentList = new List<Payment>();
+
+                var table = Table.LoadTable(_client, "payments");
+
+                var filter = new ScanFilter();
+                filter.AddCondition("OrganisationId", ScanOperator.Equal, organisationId);
+
+                var search = table.Scan(filter);
+
+                var list = new List<Document>();
+
+                do
+                {
+                    list = await search.GetNextSetAsync();
+                    foreach (var document in list)
+                    {
+                        paymentList.Add(DynamodbToPayment(document));
+                    }
+                }
+                while (!search.IsDone);
+
+                return paymentList;
+            }
+            catch (System.Exception)
+            {
+                throw;
+            }
+        }
+
         public async Task<bool> Create(IEnumerable<Payment> payments)
         {
             try
@@ -126,19 +159,23 @@ namespace PaymentsSystemExample.Api.Services
                     return null;
                 }
 
-                var payment = new Payment();
-                payment.Attributes = JsonConvert.DeserializeObject<Attributes>(document["attributes"], _attributesSerializerSettings);
-                payment.Id = Guid.Parse(document["PaymentId"]);
-                payment.OrganisationId = Guid.Parse(document["OrganisationId"]);
-                payment.Version = int.Parse(document["Version"]);
-                payment.Type = document["Type"];
-
-                return payment;
+                return DynamodbToPayment(document);
             }
             catch (System.Exception)
             {
                 throw;
             }
+        }
+
+        private Payment DynamodbToPayment(Document document)
+            {
+                var payment = new Payment();
+            payment.Attributes = JsonConvert.DeserializeObject<Attributes>(document["attributes"], _attributesSerializerSettings);
+            payment.Id = Guid.Parse(document["PaymentId"]);
+            payment.OrganisationId = Guid.Parse(document["OrganisationId"]);
+            payment.Version = int.Parse(document["Version"]);
+            payment.Type = document["Type"];
+            return payment;
         }
 
         private Document PaymentToDynamoDB(Payment payment)

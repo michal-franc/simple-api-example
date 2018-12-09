@@ -61,7 +61,7 @@ namespace PaymentsSystemExample.Api.Services
 
         public async Task<IEnumerable<Payment>> GetPayments(Guid organisationId)
         {
-            throw new NotImplementedException();
+            return await _paymentPersistenceService.List(organisationId);
         }
 
         public async Task<ValidationErrors> UpdatePayments(string rawPaymentsData, string cultureCode)
