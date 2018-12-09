@@ -76,7 +76,7 @@ namespace PaymentsSystemExample.Api.Controllers
         //TODO!!: return 422 for validation error
 
         [HttpPost]
-        public ActionResult Post(string paymentsRawData, [FromHeader (Name = "X-CultureCode")]string cultureCode)
+        public async Task<ActionResult> Post(string paymentsRawData, [FromHeader (Name = "X-CultureCode")]string cultureCode)
         {
             if(string.IsNullOrWhiteSpace(cultureCode))
             {
@@ -85,7 +85,7 @@ namespace PaymentsSystemExample.Api.Controllers
 
             // TODO: as with PUT - we need to verify if the version was not changed and if all validations pass
             // TODO: if it is not truth we discard whole request
-            var result = this._paymentService.UpdatePayments(paymentsRawData, cultureCode);
+            var result = await this._paymentService.UpdatePayments(paymentsRawData, cultureCode);
 
             if(result.HasErrors)
             {

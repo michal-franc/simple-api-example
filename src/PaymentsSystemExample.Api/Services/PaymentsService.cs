@@ -37,7 +37,7 @@ namespace PaymentsSystemExample.Api.Services
     public interface IPaymentService
     {
         Task<Payment> GetPayment(Guid id);
-        ValidationErrors UpdatePayments(string rawPaymentsData, string cultureCode);
+        Task<ValidationErrors> UpdatePayments(string rawPaymentsData, string cultureCode);
         Task<ValidationErrors> CreatePayments(string rawPaymentsData, string cultureCode);
         Task<bool> DeletePayment(Guid id);
     }
@@ -63,9 +63,35 @@ namespace PaymentsSystemExample.Api.Services
             throw new NotImplementedException();
         }
 
-        public ValidationErrors UpdatePayments(string rawPaymentsData, string cultureCode)
+        public async Task<ValidationErrors> UpdatePayments(string rawPaymentsData, string cultureCode)
         {
-            return new ValidationErrors();
+            var validationErrors = new ValidationErrors();
+
+            var payments = _paymentParser.Parse(rawPaymentsData, cultureCode);
+
+            if(_paymentParser.HasErrors)
+            {
+                foreach(var parsingError in _paymentParser.ParsingErrors)
+                {
+                    validationErrors.AddParsingError(parsingError);
+                }
+            }
+
+            foreach(var payment in payments)
+            {
+                //var domainErrors = payment.Validate();
+                //foreach(var domainError in domainErrors)
+                //{
+                //   validationErrors.AddDomainError(domainError.paymentId, domainError.attribute, domainError.error);
+                //}
+            }
+
+            if(!validationErrors.HasErrors)
+            {
+                await _paymentPersistenceService.Update(payments);
+            }
+
+            return validationErrors;
         }
 
         public async Task<ValidationErrors> CreatePayments(string rawPaymentsData, string cultureCode)
@@ -93,7 +119,7 @@ namespace PaymentsSystemExample.Api.Services
 
             if(!validationErrors.HasErrors)
             {
-                _paymentPersistenceService.Create(payments);
+                await _paymentPersistenceService.Create(payments);
             }
 
             return validationErrors;

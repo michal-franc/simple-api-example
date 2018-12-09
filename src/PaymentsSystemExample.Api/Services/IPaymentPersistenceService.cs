@@ -15,6 +15,7 @@ namespace PaymentsSystemExample.Api.Services
         Task<Payment> Get(Guid paymentid);
         Task<bool> Delete(Guid paymentid);
         Task<bool> Create(IEnumerable<Payment> payments);
+        Task<bool> Update(IEnumerable<Payment> payments);
     }
 
     // TODO: Add Payment
@@ -35,6 +36,44 @@ namespace PaymentsSystemExample.Api.Services
             config.ServiceURL = testDynamodbHost;
             config.UseHttp = true;
             _client = new AmazonDynamoDBClient("test" , "test" , "test", config);
+        }
+
+        public async Task<bool> Update(IEnumerable<Payment> payments)
+        {
+            try
+            {
+                var table = Table.LoadTable(_client, "payments");
+                var batchWrite = table.CreateBatchWrite();
+
+                foreach(var payment in payments)
+                {
+                    var document = new Document();
+                    document["PaymentId"] = payment.Id;
+                    document["OrganisationId"] = payment.OrganisationId;
+                    document["Version"] = payment.Version;
+                    document["Type"] = payment.Type;
+
+                    var serializerSettings = new JsonSerializerSettings
+                    {
+                        Culture = new CultureInfo("en-GB"),
+                        DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                        NullValueHandling = NullValueHandling.Ignore,
+                        StringEscapeHandling = StringEscapeHandling.Default,
+                        Formatting = Formatting.None
+                    };
+
+                    document["attributes"] = JsonConvert.SerializeObject(payment.Attributes, serializerSettings);
+
+                    batchWrite.AddDocumentToPut(document);
+                }
+
+                await batchWrite.ExecuteAsync();
+                return true;
+            }
+            catch (System.Exception)
+            {
+                throw;
+            }
         }
 
         public async Task<bool> Create(IEnumerable<Payment> payments)
