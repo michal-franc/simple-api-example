@@ -1,6 +1,16 @@
 .PHONY: unit-test, auto-test, integration-test, all-tests, put-multi, put-single
 
 run:
+	cd test-infra && docker-compose up -d
+	sleep 5
+	cd test-infra && ./create-test-table.sh
+	sleep 2
+	dotnet run --project src/PaymentsSystemExample.Api/PaymentsSystemExample.Api.csproj
+	touch run
+
+stop:	
+	cd test-infra && docker-compose down
+	rm run
 
 build:
 	dotnet build src/PaymentsSystemExample.Api/PaymentsSystemExample.Api.csproj
