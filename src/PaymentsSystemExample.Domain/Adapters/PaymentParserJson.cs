@@ -27,7 +27,6 @@ namespace PaymentsSystemExample.Domain.Adapters
 
         public IEnumerable<Payment> Parse(string rawJson, string cultureCode)
         {
-            // I had to move settings initialization here as i want to create multi tenant app that cculture is configured per request
             var serializerSettings = new JsonSerializerSettings
             { 
                 // I would catch here first basic validations - like timezone in date, amount decimal separator, id not being a guid etc
