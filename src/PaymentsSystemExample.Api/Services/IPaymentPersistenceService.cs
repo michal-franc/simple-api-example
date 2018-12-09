@@ -12,6 +12,7 @@ namespace PaymentsSystemExample.Api.Services
     public interface IPaymentPersistenceService
     {
         Task<Payment> Get(Guid paymentid);
+        Task<bool> Delete(Guid paymentid);
     }
 
     // TODO: Add Payment
@@ -67,6 +68,14 @@ namespace PaymentsSystemExample.Api.Services
             }
         }
 
+        // TODO: should the dynamodb be primary key payment id - sort key -> org id? so that we can create a composite key?
+        public async Task<bool> Delete(Guid paymentId)
+        {
+            var table = Table.LoadTable(_client, "payments");
+            await table.DeleteItemAsync(paymentId);
+            return true;
+        }
+
         public async Task<Payment> Get(Guid paymentId)
         {
             var table = Table.LoadTable(_client, "payments");
@@ -80,6 +89,10 @@ namespace PaymentsSystemExample.Api.Services
             };
 
             var document = await table.GetItemAsync(paymentId);
+            if(document is null)
+            {
+                return null;
+            }
 
             var payment = new Payment();
             payment.Attributes = JsonConvert.DeserializeObject<Attributes>(document["attributes"], serializerSettings);

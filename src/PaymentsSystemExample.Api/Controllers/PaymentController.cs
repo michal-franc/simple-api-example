@@ -98,7 +98,7 @@ namespace PaymentsSystemExample.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        public async Task<IActionResult> Delete(string id)
         {
             var guid = id.TryConvertIdToGuid();
             if(guid == default(Guid))
@@ -108,7 +108,7 @@ namespace PaymentsSystemExample.Api.Controllers
                 return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
             }
 
-            if (this._paymentService.DeletePayment(guid))
+            if (await this._paymentService.DeletePayment(guid))
             {
                 return Ok();
             }

@@ -31,7 +31,7 @@ namespace PaymentsSystemExample.Api.Services
         Task<Payment> GetPayment(Guid id);
         ValidationErrors UpdatePayments(string rawPaymentsData, string cultureCode);
         ValidationErrors CreatePayments(string rawPaymentsData, string cultureCode);
-        bool DeletePayment(Guid id);
+        Task<bool> DeletePayment(Guid id);
     }
 
     public class PaymentService : IPaymentService
@@ -49,14 +49,7 @@ namespace PaymentsSystemExample.Api.Services
 
         public async Task<Payment> GetPayment(Guid id)
         {
-            try
-            {
-                return await _paymentPersistenceService.Get(id);
-            }
-            catch (System.Exception)
-            {
-                throw;
-            }
+            return await _paymentPersistenceService.Get(id);
         }
 
         public IEnumerable<Payment> ListPayments()
@@ -83,12 +76,13 @@ namespace PaymentsSystemExample.Api.Services
             return new ValidationErrors();
         }
 
-        // TODO: should we support bulk delete?
-        public bool DeletePayment(Guid id)
+        //TODO: organisation id has to be passed here so that we dont allow users to remove all the payments
+        //TODO: this also needs to be encoded with token
+        //TODO: Should use tombstone here and different worker for data removal (to give ability for user to revert action just in case)
+        public async Task<bool> DeletePayment(Guid id)
         {
-            if(InMemDB.Any(x => x.Id == id))
+            if(await _paymentPersistenceService.Delete(id))
             {
-                this.InMemDB.Remove(InMemDB.Where(x => x.Id == id).Single());
                 return true;
             }
 
