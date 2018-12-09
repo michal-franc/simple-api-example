@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace PaymentsSystemExample.Domain.Adapters.CustomJsonConverters
 {
-    internal class PaymentAmountConverter: JsonConverter
+    public class PaymentAmountConverter: JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {
@@ -33,12 +33,21 @@ namespace PaymentsSystemExample.Domain.Adapters.CustomJsonConverters
                 return null;
             }
 
-            throw new JsonSerializationException("Not supported token type: " + token.Type.ToString());
+            throw new JsonSerializationException($"Not supported token type: {token.Type.ToString()} with value: {token.ToString()}");
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            throw new NotImplementedException();
+            var type = value.GetType();
+
+            if(type == typeof(decimal) || type == typeof(decimal?))
+            {
+                JToken token = JToken.FromObject(value.ToString());
+                token.WriteTo(writer);
+                return;
+            }
+
+            throw new JsonSerializationException($"PaymentAmountConverter used on unsupported field type expected: 'decimal' or 'decimal?' got: {type}");
         }
     }
 }
