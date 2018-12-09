@@ -6,11 +6,9 @@ run:
 	cd test-infra && ./create-test-table.sh
 	sleep 2
 	dotnet run --project src/PaymentsSystemExample.Api/PaymentsSystemExample.Api.csproj
-	touch run
 
 stop:	
 	cd test-infra && docker-compose down
-	rm run
 
 build:
 	dotnet build src/PaymentsSystemExample.Api/PaymentsSystemExample.Api.csproj
