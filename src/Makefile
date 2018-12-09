@@ -1,4 +1,4 @@
-.PHONY: unit-test, auto-test, integration-test
+.PHONY: unit-test, auto-test, integration-test, all-tests
 
 unit-test:
 	dotnet test PaymentsSystemExample.UnitTests/PaymentsSystemExample.UnitTests.csproj
@@ -8,6 +8,8 @@ integration-test:
 
 auto-test:
 	rg --files -tcsharp | entr make unit-test
+
+all-tests: unit-test, integration-test
 
 build:
 	dotnet build PaymentsSystemExample.Api/PaymentsSystemExample.Api.csproj
