@@ -9,9 +9,6 @@ Payments system API sample using [Form3 API](http://api-docs.form3.tech/) as dom
 - [entr](http://eradman.com/entrproject/), [ripgrep](https://github.com/BurntSushi/ripgrep)
   - to run make auto-test 
   - it runs unit tests whenever a file is changed
-- [httpie](https://github.com/jakubroztocil/httpie)
-  - to run test-data scripts to push json files
-  - this can easilly be changed to curl
 
 ### How to run?
 
@@ -32,6 +29,24 @@ make stop
 ```
 This command:
 - removes localstack and cleans up images
+
+### How to run tests?
+Go to main folder and
+```
+make all-tests
+```
+
+### How to populate DynamoDB?
+Go to main folder and
+```
+make put-single
+```
+For one payment.
+
+```
+make put-multi
+```
+For multiple payments.
 
 - TODO: dont forget to prepars the code with static analysis code checkes like stylecop
 - TODO: add compression and caching
