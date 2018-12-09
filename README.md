@@ -1,15 +1,37 @@
 Payments system API sample using [Form3 API](http://api-docs.form3.tech/) as domain example. Approach with one single API.
 - code was written on Linux Mint using I3wm and vscode + cli scripts
 
-Requirements:
-- entr, ripgrep -> to run make auto-test 
--- this is a solution to run unit tets whenever a file is changed
-- httpie -> to run test-data scripts to push json files
--- this can easillyt be changed to curl
-- .net sdk 2.1
-- aws cli -> to create dynamodb on localstack
+## Requirements:
+- [.net code sdk 2.1](https://dotnet.microsoft.com/download)
+- [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
+  - to create dynamodb on localstack
+##### Optional
+- [entr](http://eradman.com/entrproject/), [ripgrep](https://github.com/BurntSushi/ripgrep)
+  - to run make auto-test 
+  - it runs unit tests whenever a file is changed
+- [httpie](https://github.com/jakubroztocil/httpie)
+  - to run test-data scripts to push json files
+  - this can easilly be changed to curl
 
-## 
+### How to run?
+
+Go to main folder and
+```
+make run
+```
+This command:
+- starts docker composed [localstack](https://github.com/localstack/localstack) in detached mode with stubbed **DynamoDB**.
+- waits 5 seconds
+- runs a script to create **payments** table on localstack DynamoDB
+- starts dotnet application on port **5000** for http and **5001** for https
+
+### How to stop and cleanup?
+Go to main folder and
+```
+make stop
+```
+This command:
+- removes localstack and cleans up images
 
 - TODO: dont forget to prepars the code with static analysis code checkes like stylecop
 - TODO: add compression and caching
