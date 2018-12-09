@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using PaymentsSystemExample.Domain.Adapters;
 using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 using PaymentsSystemExample.Api.Services;
+using PaymentsSystemExample.Api.Extensions;
 
 namespace PaymentsSystemExample.Api.Controllers
 {
@@ -23,13 +24,9 @@ namespace PaymentsSystemExample.Api.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(string id)
         {
-            // TODO move this to action filter?
-            var guid = this.TryConvertIdToGuid(id);
+            var guid = id.TryConvertIdToGuid();
             if(guid == default(Guid))
             { 
-                // TODO: send this message in content negionated format
-                // Json or xml - depending on client
-                // At the moment this is a plain text
                 return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
             }
 
@@ -46,8 +43,12 @@ namespace PaymentsSystemExample.Api.Controllers
         // TODO: return 422 for validation error
         // TODO: return 409 for duplicate error
 
+        // Assumed here that with multiple payments I will discard whole batch if one payment is 'incorrect'
+        // We only touch database if the whole batch is succesfull (I don't want to deal with transactions or compensating actions at the moment)
+        // This forces user to resend whole batch
+        // Alternative solution - create the ones that are ok and return information which ones were faulty
+        // This lowers the amount sent on 'retry' request
         [HttpPut]
-        // TODO: not void here but return a message succesfull or something + 200
         public ActionResult Put(string paymentsRawData, [FromHeader(Name = "X-CultureCode")] string cultureCode)
         {
             if(string.IsNullOrWhiteSpace(cultureCode))
@@ -55,23 +56,9 @@ namespace PaymentsSystemExample.Api.Controllers
                 return BadRequest("X-CultureCode header missing.");
             }
 
-            // TODO: support for more payments than one
-            // TODO: move this to action filter?
-            // TODO: This should be checked in the Domain validation process
-            // var guid = this.TryConvertIdToGuid(payment.Id);
-            // if(guid == default(Guid))
-            // { 
-            //    return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
-            //}
-
-            // TODO: with multiple payments? should we discard the whole request if one of them is failed? or return the ones that were successful and inform the ones that failed?
-            // TODO: discard would require - transaction?
-            // TODO: lack of dicards - lower the amount of data sent with retry as user doesnt have to sent it again but they need to deduplicate it
-            // TODO: users would probably retry the whole package ... so i will assume dicards whole set
             // TODO: return validation errors and display them
-
-            // TODO: culture needs to com from header
-            var result = _paymentService.CreatePayments(paymentsRawData, "en-GB");
+            // TODO: we need to verify if the version was not changed and if all validations pass
+            var result = _paymentService.CreatePayments(paymentsRawData, cultureCode);
 
             if(result.HasErrors)
             {
@@ -86,6 +73,7 @@ namespace PaymentsSystemExample.Api.Controllers
         //TODO!!: Domain validatione erors on domain side
         //TODO!!: you need to do parsing on the cotrnoller side
         //TODO!!: service should operate with domain objects not raw string
+        //TODO!!: return 422 for validation error
 
         [HttpPost]
         public ActionResult Post(string paymentsRawData, [FromHeader (Name = "X-CultureCode")]string cultureCode)
@@ -97,7 +85,7 @@ namespace PaymentsSystemExample.Api.Controllers
 
             // TODO: as with PUT - we need to verify if the version was not changed and if all validations pass
             // TODO: if it is not truth we discard whole request
-            var result = this._paymentService.UpdatePayments(paymentsRawData, "en-GB");
+            var result = this._paymentService.UpdatePayments(paymentsRawData, cultureCode);
 
             if(result.HasErrors)
             {
@@ -109,24 +97,16 @@ namespace PaymentsSystemExample.Api.Controllers
             }
         }
 
-        [HttpPatch("{id}")]
-        public ActionResult HttpPatch(string id)
-        {
-            //TODO: implement if there is time :)
-            throw new NotImplementedException();
-        }
-
         [HttpDelete("{id}")]
         public IActionResult Delete(string id)
         {
-            // TODO move this to action filter?
-            var guid = this.TryConvertIdToGuid(id);
+            var guid = id.TryConvertIdToGuid();
             if(guid == default(Guid))
             { 
+                // TODO: send this message in content negionated format Json or xml - depending on client
+                // At the moment this is a plain text - not perfect
                 return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
             }
-
-            // TODO: not found
 
             if (this._paymentService.DeletePayment(guid))
             {
@@ -138,16 +118,11 @@ namespace PaymentsSystemExample.Api.Controllers
             }
         }
 
-        private Guid TryConvertIdToGuid(string id) 
+        [HttpPatch("{id}")]
+        public ActionResult HttpPatch(string id)
         {
-            Guid outGuid;
-
-            if(Guid.TryParse(id, out outGuid))
-            {
-                return outGuid;
-            }
-
-            return default(Guid);
+            //TODO: implement if there is time :)
+            throw new NotImplementedException();
         }
     }
 }
