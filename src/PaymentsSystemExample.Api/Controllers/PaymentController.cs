@@ -10,6 +10,9 @@ using PaymentsSystemExample.Api.Extensions;
 
 namespace PaymentsSystemExample.Api.Controllers
 {
+    //TODO: Organisation ID should be in the header? So that you as a user have to make a consciouse choice that i want to get payment for this org?
+    //TODO: ADD Token header + basic auth system to verify if your tokent matches org so that you dont access resources you dont have access to
+
     [Route("api/v1/[controller]")]
     [ApiController]
     public class PaymentController : ControllerBase
@@ -69,12 +72,8 @@ namespace PaymentsSystemExample.Api.Controllers
                 return Ok();
             }
         }
-        //TODO!!: Request vcalidation errors on controller side
-        //TODO!!: Domain validatione erors on domain side
-        //TODO!!: you need to do parsing on the cotrnoller side
-        //TODO!!: service should operate with domain objects not raw string
-        //TODO!!: return 422 for validation error
 
+        //TODO!!: return 422 for validation error
         [HttpPost]
         public async Task<ActionResult> Post(string paymentsRawData, [FromHeader (Name = "X-CultureCode")]string cultureCode)
         {
