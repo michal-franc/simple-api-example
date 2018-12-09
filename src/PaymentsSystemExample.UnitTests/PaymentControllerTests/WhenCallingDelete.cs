@@ -16,6 +16,22 @@ namespace PaymentsSystemExample.UnitTests.PaymentControllerTests
     public class PaymentControllerTests_WhenCallingDelete
     {
         [Fact]
+        public async Task AndThereIsExeption_ThenReturn500()
+        {
+            var paymentServiceMock = new Mock<IPaymentService>();
+            paymentServiceMock.Setup(x => x.DeletePayment(It.IsAny<Guid>())).ThrowsAsync(new Exception());
+
+            var sut = new PaymentController(paymentServiceMock.Object);
+
+            var result = await sut.Delete(Guid.NewGuid().ToString());
+
+            result.Should().BeOfType<StatusCodeResult>();
+
+            var castedResult = (StatusCodeResult)result;
+            castedResult.StatusCode.Should().Be(500);
+        }
+
+        [Fact]
         public async Task AndThereIsNoPayment_ThenReturn404()
         {
             var nonExistingPaymentId = Guid.NewGuid();

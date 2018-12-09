@@ -15,6 +15,25 @@ namespace PaymentsSystemExample.UnitTests.PaymentControllerTests
     public class PaymentControllerTests_WhenCallingPost
     {
         [Fact]
+        public async Task AndThereIsExeption_ThenReturn500()
+        {
+            var cultureCode = "en-GB";
+            var rawPayment = string.Empty;
+
+            var paymentServiceMock = new Mock<IPaymentService>();
+            paymentServiceMock.Setup(x => x.UpdatePayments(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception());
+
+            var sut = new PaymentController(paymentServiceMock.Object);
+
+            var result = await sut.Post(rawPayment, cultureCode);
+
+            result.Should().BeOfType<StatusCodeResult>();
+
+            var castedResult = (StatusCodeResult)result;
+            castedResult.StatusCode.Should().Be(500);
+        }
+
+        [Fact]
         public async Task AndThereIsAValidPayment_Return200_AndUpdatePayment()
         {
             var cultureCode = "en-GB";

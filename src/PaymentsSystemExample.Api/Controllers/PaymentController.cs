@@ -33,14 +33,21 @@ namespace PaymentsSystemExample.Api.Controllers
                 return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
             }
 
-            var payment = await _paymentService.GetPayment(guid);
-
-            if(payment == null)
+            try
             {
-                return NotFound();
-            }
+                var payment = await _paymentService.GetPayment(guid);
 
-            return Ok(payment);
+                if(payment == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(payment);
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500);
+            }
         }
 
         // TODO: return 422 for validation error
@@ -59,17 +66,24 @@ namespace PaymentsSystemExample.Api.Controllers
                 return BadRequest("X-CultureCode header missing.");
             }
 
-            // TODO: return validation errors and display them
-            // TODO: we need to verify if the version was not changed and if all validations pass
-            var result = await _paymentService.CreatePayments(content, cultureCode);
+            try
+            {
+                // TODO: return validation errors and display them
+                // TODO: we need to verify if the version was not changed and if all validations pass
+                var result = await _paymentService.CreatePayments(content, cultureCode);
 
-            if(result.HasErrors)
-            {
-                return BadRequest(result);
+                if(result.HasErrors)
+                {
+                    return BadRequest(result);
+                }
+                else
+                {
+                    return Ok();
+                }
             }
-            else
+            catch (System.Exception)
             {
-                return Ok();
+                return StatusCode(500);
             }
         }
 
@@ -82,17 +96,24 @@ namespace PaymentsSystemExample.Api.Controllers
                 return BadRequest("X-CultureCode header missing.");
             }
 
-            // TODO: as with PUT - we need to verify if the version was not changed and if all validations pass
-            // TODO: if it is not truth we discard whole request
-            var result = await this._paymentService.UpdatePayments(paymentsRawData, cultureCode);
+            try
+            {
+                // TODO: as with PUT - we need to verify if the version was not changed and if all validations pass
+                // TODO: if it is not truth we discard whole request
+                var result = await this._paymentService.UpdatePayments(paymentsRawData, cultureCode);
 
-            if(result.HasErrors)
-            {
-                return BadRequest(result);
+                if(result.HasErrors)
+                {
+                    return BadRequest(result);
+                }
+                else
+                {
+                    return Ok();
+                }
             }
-            else
+            catch (System.Exception)
             {
-                return Ok();
+                return StatusCode(500);
             }
         }
 
@@ -107,13 +128,20 @@ namespace PaymentsSystemExample.Api.Controllers
                 return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
             }
 
-            if (await this._paymentService.DeletePayment(guid))
+            try
             {
-                return Ok();
+                if (await this._paymentService.DeletePayment(guid))
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return NotFound();
+                }
             }
-            else
+            catch (System.Exception)
             {
-                return NotFound();
+                return StatusCode(500);
             }
         }
 
