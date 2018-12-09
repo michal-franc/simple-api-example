@@ -118,11 +118,11 @@ namespace PaymentsSystemExample.Api.Controllers
             }
         }
 
-        [HttpPatch("{id}")]
-        public ActionResult HttpPatch(string id)
+        [HttpPatch]
+        public async Task<ActionResult> HttpPatch()
         {
             //TODO: implement if there is time :)
-            throw new NotImplementedException();
+            return NotFound();
         }
     }
 }
