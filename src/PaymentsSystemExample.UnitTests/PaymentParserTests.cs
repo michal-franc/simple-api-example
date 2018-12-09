@@ -121,8 +121,7 @@ namespace PaymentsSystemExample.UnitTests
     // We expect date in format YYYY-MM-DD
     // We need to validate it and throw an error if user specifries different date
     // For instance with hours - assuming that we will process this payment in an hour
-
-    // At the beggingign with date i was consfused why there is no timezone but check to the api revealeed that
+    // At the beggingign with date i was consfused why there is no timezone but check to the api revealed that
     // Format is deliberately mentioned
     public class WhenParsingPaymentProcessingDateFromJsonTests
     {
