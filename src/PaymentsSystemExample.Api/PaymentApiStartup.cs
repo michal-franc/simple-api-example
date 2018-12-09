@@ -34,10 +34,7 @@ namespace PaymentsSystemExample.Api
                 options.InputFormatters.Insert(0, new RawJsonBodyInputFormatter());
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            // Singleton at the begginging as this is a service using in mem collection at the moment
-            services.AddSingleton<IPaymentService, PaymentService>();
-            // Will change to Transient when we have a proper DB connection
-            //services.AddTransient<IPaymentService, PaymentService>();
+            services.AddTransient<IPaymentService, PaymentService>();
             services.AddSingleton<IPaymentParser, PaymentParserJson>();
             services.AddTransient<IPaymentPersistenceService, PaymentPersistenceServiceDynamoDB>();
         }
