@@ -22,7 +22,7 @@ namespace PaymentsSystemExample.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(string id)
+        public async Task<IActionResult> Get(string id)
         {
             var guid = id.TryConvertIdToGuid();
             if(guid == default(Guid))
@@ -30,7 +30,7 @@ namespace PaymentsSystemExample.Api.Controllers
                 return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
             }
 
-            var payment = this._paymentService.GetPayment(guid);
+            var payment = await _paymentService.GetPayment(guid);
 
             if(payment == null)
             {

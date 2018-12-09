@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 using PaymentsSystemExample.Domain.Adapters;
@@ -23,9 +24,11 @@ namespace PaymentsSystemExample.Api.Services
         }
     }
 
+    // This service is the layer where we do 
+    // domain validations and if these are fine moving on to databse layer
     public interface IPaymentService
     {
-        Payment GetPayment(Guid id);
+        Task<Payment> GetPayment(Guid id);
         ValidationErrors UpdatePayments(string rawPaymentsData, string cultureCode);
         ValidationErrors CreatePayments(string rawPaymentsData, string cultureCode);
         bool DeletePayment(Guid id);
@@ -35,16 +38,30 @@ namespace PaymentsSystemExample.Api.Services
     {
         private readonly List<Payment> InMemDB;
         private IPaymentParser _paymentParser;
+        private IPaymentPersistenceService _paymentPersistenceService;
 
-        public PaymentService(IPaymentParser paymentsParser)
+        public PaymentService(IPaymentParser paymentsParser, IPaymentPersistenceService paymentPersistenceService)
         {
             this.InMemDB = new List<Payment>();
             _paymentParser = paymentsParser;
+            _paymentPersistenceService = paymentPersistenceService;
         }
 
-        public Payment GetPayment(Guid id)
+        public async Task<Payment> GetPayment(Guid id)
         {
-            return this.InMemDB.Find(x => x.Id == id);
+            try
+            {
+                return await _paymentPersistenceService.Get(id);
+            }
+            catch (System.Exception)
+            {
+                throw;
+            }
+        }
+
+        public IEnumerable<Payment> ListPayments()
+        {
+            throw new NotImplementedException();
         }
 
         public ValidationErrors UpdatePayments(string rawPaymentsData, string cultureCode)

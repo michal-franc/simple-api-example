@@ -35,6 +35,7 @@ namespace PaymentsSystemExample.Api
             // Will change to Transient when we have a proper DB connection
             //services.AddTransient<IPaymentService, PaymentService>();
             services.AddSingleton<IPaymentParser, PaymentParserJson>();
+            services.AddTransient<IPaymentPersistenceService, PaymentPersistenceServiceDynamoDB>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
