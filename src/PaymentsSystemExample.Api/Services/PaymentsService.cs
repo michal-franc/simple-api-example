@@ -37,6 +37,7 @@ namespace PaymentsSystemExample.Api.Services
     public interface IPaymentService
     {
         Task<Payment> GetPayment(Guid id);
+        Task<IEnumerable<Payment>> GetPayments(Guid organisationId);
         Task<ValidationErrors> UpdatePayments(string rawPaymentsData, string cultureCode);
         Task<ValidationErrors> CreatePayments(string rawPaymentsData, string cultureCode);
         Task<bool> DeletePayment(Guid id);
@@ -58,7 +59,7 @@ namespace PaymentsSystemExample.Api.Services
             return await _paymentPersistenceService.Get(id);
         }
 
-        public IEnumerable<Payment> ListPayments()
+        public async Task<IEnumerable<Payment>> GetPayments(Guid organisationId)
         {
             throw new NotImplementedException();
         }

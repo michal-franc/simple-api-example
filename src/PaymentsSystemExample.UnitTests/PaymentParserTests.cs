@@ -9,8 +9,7 @@ using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 
 namespace PaymentsSystemExample.UnitTests
 {
-    // TODO: I Would similar tests for FX, Charges informatioon and sender charges test
-    // But omiting it now
+    // TODO: I Would similar tests for FX, Charges informatioon and sender charges test but omiting them now
     public class WhenParsingParty
     {
         [Theory]

@@ -21,20 +21,33 @@ namespace PaymentsSystemExample.Api.Controllers
             this._paymentService = paymentService;
         }
 
-        //TODO: Paging
-        //TODO: filters?
+        //TODO: Paging?
+        //TODO: filters - ??
         [HttpGet("{organisationId}")]
-        public IActionResult Get(string organisationId)
+        public async Task<IActionResult> Get(string organisationId)
         {
             var guid = organisationId.TryConvertIdToGuid();
             if(guid == default(Guid))
             { 
-                // TODO: send this message in content negionated format Json or xml - depending on client
-                // At the moment this is a plain text - not perfect
              return BadRequest($"Incorrect organisation id sent - '{organisationId}' -  Expected Guid format.");
             }
 
-            throw new NotImplementedException();
+            try
+            {
+                var payments = await _paymentService.GetPayments(guid);
+                if(payments.Any())
+                {
+                    return Ok(payments);
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            catch (Exception)
+            {
+               return StatusCode(500);
+            }
         }
     }
 }
