@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PaymentsSystemExample.Domain.Adapters.CustomJsonConverters;
 
-namespace PaymentsSystemExample.UnitTests
+namespace PaymentsSystemExample.UnitTests.CustomJsonSerializersTests
 {
     internal class ProcessingDateTimeStub
     {
