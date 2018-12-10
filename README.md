@@ -58,6 +58,7 @@ For one payment.
 ```
 make put-multi
 ```
+For multiple payments.
 
 ### How I approached this task?
 - Started with empty repo nothing special here added .gitignore.
@@ -93,7 +94,7 @@ make put-multi
   - For me Domain is *sacred* and should be only about my business problem. UI, DB layers are kept away.
   - FluentValidation provides nice framework to create and wire up validations on your domain objects.
 
-For multiple payments.
+### Why I picked up DynamoDB?
 
 - TODO: dont forget to prepars the code with static analysis code checkes like stylecop
 - TODO: add compression and caching
