@@ -46,6 +46,19 @@ namespace PaymentsSystemExample.UnitTests.CustomJsonSerializersTests
         }
 
         [Fact]
+        public void WhenSerializingNegativeAmount_IGetCorrectValue()
+        {
+            var testData = new AmountStub
+            { 
+                Amount = -10.11m
+            };
+
+            var serializedData = JsonConvert.SerializeObject(testData);
+
+            serializedData.Should().Be("{\"amount\":\"-10.11\"}");
+        }
+
+        [Fact]
         public void WhenSerializingNullableAmount_IGetCorrectlyFormattedValue()
         {
             var testData = new AmountNullableStub

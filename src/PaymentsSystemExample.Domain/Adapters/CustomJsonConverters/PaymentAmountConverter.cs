@@ -20,12 +20,12 @@ namespace PaymentsSystemExample.Domain.Adapters.CustomJsonConverters
                 decimal value = default(decimal);
 
                 // Allowing only decimal point here
-                if(Decimal.TryParse(token.ToString(), NumberStyles.AllowDecimalPoint, serializer.Culture, out value))
+                if(Decimal.TryParse(token.ToString(), NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, serializer.Culture, out value))
                 {
                     return value;
                 }
 
-                throw new JsonSerializationException("Incorrect decimal format: " + token.ToString());
+                throw new JsonSerializationException("Incorrect decimal format expected '.' got: " + token.ToString());
             }
 
             if (token.Type == JTokenType.Null && objectType == typeof(decimal?))

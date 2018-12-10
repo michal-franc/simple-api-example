@@ -9,7 +9,7 @@ using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 
 namespace PaymentsSystemExample.UnitTests
 {
-    // TODO: I Would similar tests for FX, Charges informatioon and sender charges test but omiting them now
+    // TODO: I Would add similar tests for FX, Charges informatioon and sender charges test but omiting them now
     public class WhenParsingParty
     {
         [Theory]
@@ -226,7 +226,26 @@ namespace PaymentsSystemExample.UnitTests
         }
 
         [Fact]
-        public void WithCommaSeparatedCulture_RetunrPayment_AndNoParsingErrors()
+        public void AndNegativeValue_ThenReturnPayment_WithParsingErrors()
+        {
+            var sut = new PaymentParserJsonGB();
+            var expectedAmount = "-100.21";
+
+            var testJson = $@"{{
+                'data': [{{
+                    'attributes':{{
+                        'amount': '{expectedAmount}'
+                    }}
+                }}]
+            }}";
+
+            var resultPayment = sut.Parse(testJson);
+            sut.HasErrors.Should().Be(false);
+            expectedAmount.Should().Be(resultPayment.First().Attributes.Amount.ToString());
+        }
+
+        [Fact]
+        public void WithCommaSeparatedCulture_ReturnPayment_AndNoParsingErrors()
         {
             var testCulture = "nl-BE";
             var sut = new PaymentParserJson();
