@@ -1,3 +1,7 @@
+## Summary:
+
+!["basic diagram"](/diagrams/basic_diagram.png)
+
 Payments system API sample using [Form3 API](http://api-docs.form3.tech/) as domain example. Approach with one single API.
 - code was written on Linux Mint using I3wm and vscode + cli scripts
 
