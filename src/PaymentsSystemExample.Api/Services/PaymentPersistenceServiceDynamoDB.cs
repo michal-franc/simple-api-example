@@ -11,21 +11,22 @@ using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
 using Newtonsoft.Json;
 
+using Microsoft.Extensions.Configuration;
+
 namespace PaymentsSystemExample.Api.Services
 {
     // Service for local testing
     public class LocalPaymentPersistenceServiceDynamoDB: PaymentPersistenceServiceDynamoDB
     {
-        // Localstack URL - should be injected through config
-        private const string LocalDynamoDBHost = "http://localhost:4569";
-
         // LocalStack doesnt have credentials but AWS SDk requires values
         private const string CredentialsStub = "test";
 
-        public LocalPaymentPersistenceServiceDynamoDB()
+        public LocalPaymentPersistenceServiceDynamoDB(IConfiguration configuration)
         {
+            var host = configuration["DynamoDBHost"];
             var config = new AmazonDynamoDBConfig();
-            config.ServiceURL = LocalDynamoDBHost;
+
+            config.ServiceURL = host;
             config.UseHttp = true;
 
             // this should be potentially injected through the IOC but ... ideally I would move the DynamoDB and amazong SDto separate project

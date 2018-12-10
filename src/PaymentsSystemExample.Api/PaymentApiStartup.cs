@@ -34,6 +34,7 @@ namespace PaymentsSystemExample.Api
                 options.InputFormatters.Insert(0, new RawJsonBodyInputFormatter());
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
+            services.AddSingleton<IConfiguration>(Configuration);
             services.AddTransient<IPaymentService, PaymentService>();
             services.AddSingleton<IPaymentParser, PaymentParserJson>();
             services.AddSingleton<IPaymentPersistenceService, LocalPaymentPersistenceServiceDynamoDB>();
