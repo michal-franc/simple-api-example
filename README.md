@@ -10,7 +10,7 @@ Payments system API sample using [Form3 API](http://api-docs.form3.tech/) as dom
 - [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
   - to create dynamodb on localstack
 - [docker](https://docs.docker.com/install/linux/docker-ce/binaries/#prerequisites) 
-  - Docker Engine 17.12 CE (tested on 17.12.0-c, build c97c6d6)
+  - Docker Engine 17.12 CE (tested on 17.12.0-ce, build c97c6d6)
   - if you have older or newer version you will need to change **docker-compose.yml** file version based on [link](https://docs.docker.com/compose/compose-file/#compose-and-docker-compatibility-matrix)
 ##### Optional
 - [entr](http://eradman.com/entrproject/), [ripgrep](https://github.com/BurntSushi/ripgrep)
@@ -60,9 +60,21 @@ make put-multi
 ```
 
 ### How I approached this task?
-- started with empty repo nothing special here added .gitignore - de7cb9a2eb517b9d07c550e0f85f28447bbbceaa
-- added placeholder generate app from dotnet new - 773cd35a1e66a030d19fab9a58d52b30cb871458
-- added unit test folder - c9854e4cb6bb25cd52fcccfc212be9126d44b74c
+- Started with empty repo nothing special here added .gitignore.
+- Added placeholder generate app from dotnet new.
+- Added unit test folder.
+- Wired up basis unit tests running (make auto-test).
+- Wired up basic integration tests with **LightBDD**.
+- Started with discovering problem space by working on **json** parsing. At the beginning I don't want to start with UI layer or DB layer. Domain, core is most important. By parsing json I was able to figure out how the data looks like, what kind of validations I need and how to design this system. This will lead to potential ideas which DB to pick or how to structure the API. This is also the moment wher communication beetwen Engineer <-> Domain Expert starts to happen.
+- Added first API using InMemDB (List :)) simulating some data layer.
+- Wired up IOC and wrote first unit tests for controller.
+- Wrote controller flow logic with unit tests with some basic BDD style integration tests (still using InMemDb).
+- Wired up first method GET using DynamoDB on localstack.
+- Moved on with DELETE, PUT, POST methods and Payments List GET.
+- Refactorization Clean Up.
+- Adding more integration tests - fixing bugs along the way with unit tests to cover them.
+- Creating simple implementation of Domain validation.
+
 For multiple payments.
 
 - TODO: dont forget to prepars the code with static analysis code checkes like stylecop
