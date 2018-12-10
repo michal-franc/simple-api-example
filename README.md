@@ -179,42 +179,42 @@ For multiple payments.
 
 ### Things I would do with more time
 
-- [] add license file
-- [] limit list payments to 10 records
-  - [] paging
-  - [] filters
-- [] compression and caching of requests
-- [] delete - get - should require organisationId in the request to prevent users from scrapping data of other orgs or removing data
-  - [] Security tokens and simple authorization - organisation id in the token vs orgnisation id used in the queries to data store
-- [] handling creation of duplicate payments - and 409 code
-- [] domain in separate project
-  - [] json objects as separte classess in separete project
-- [] more unit tests coverage
-- [] more integration tests coverage
-- [] testing in on the cloud (AWS)
-  - [] running on k8s cluster
-- [] optimistic concurrency when updating records
-- [] load testing using k6 and my own simple example - https://github.com/michal-franc/docker-k6-influxdb-grafana
-- [] Pass with more robust static code analysis tools like stylecop
-- [] write tests to verify cache and compression
-- [] throttling on the api 
+- [ ] add license file
+- [ ] limit list payments to 10 records
+  - [ ] paging
+  - [ ] filters
+- [ ] compression and caching of requests
+- [ ] delete - get - should require organisationId in the request to prevent users from scrapping data of other orgs or removing data
+  - [ ] Security tokens and simple authorization - organisation id in the token vs orgnisation id used in the queries to data store
+- [ ] handling creation of duplicate payments - and 409 code
+- [ ] domain in separate project
+  - [ ] json objects as separte classess in separete project
+- [ ] more unit tests coverage
+- [ ] more integration tests coverage
+- [ ] testing in on the cloud (AWS)
+  - [ ] running on k8s cluster
+- [ ] optimistic concurrency when updating records
+- [ ] load testing using k6 and my own simple example - https://github.com/michal-franc/docker-k6-influxdb-grafana
+- [ ] Pass with more robust static code analysis tools like stylecop
+- [ ] write tests to verify cache and compression
+- [ ] throttling on the api 
   - ideally this should be on a different layer like api gateway of DDOS WAF protection
-- [] metrics with prometheus
-- [] influxDB + grafana for metrics
-- [] logging to file
-- [] High Availability - 3 instances - using docker and some load balancer on nginx 
-  - [] route53 and ALB simulation on localstack (not sure if this is possible?)
-- [] test if it builds on windows :)
-- [] do a chaos engineering round of tests 
+- [ ] metrics with prometheus
+- [ ] influxDB + grafana for metrics
+- [ ] logging to file
+- [ ] High Availability - 3 instances - using docker and some load balancer on nginx 
+  - [ ] route53 and ALB simulation on localstack (not sure if this is possible?)
+- [ ] test if it builds on windows :)
+- [ ] do a chaos engineering round of tests 
   - both the app and the unit tets (break code and see what kind of messages does the test give is it easy to understand?)
-- [] Hateos like in the example file
-- [] Content negotation
-- [] Better isolation of data for organisations so that everything is not in single table
-- [] Proper design strategy on partitioning key pick - should we use composite? what sort key? etc etc
-- [] Swagger and API discoverability
-- [] Delete using tombstone approach with removal eventually consitent to enable 'accidental' recovery
-- [] Patch Verb support
-- [] https
+- [ ] Hateos like in the example file
+- [ ] Content negotation
+- [ ] Better isolation of data for organisations so that everything is not in single table
+- [ ] Proper design strategy on partitioning key pick - should we use composite? what sort key? etc etc
+- [ ] Swagger and API discoverability
+- [ ] Delete using tombstone approach with removal eventually consitent to enable 'accidental' recovery
+- [ ] Patch Verb support
+- [ ] https
 
 ### System I would build given 'infinite' amount of time and resources
 
