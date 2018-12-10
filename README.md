@@ -73,7 +73,25 @@ make put-multi
 - Moved on with DELETE, PUT, POST methods and Payments List GET.
 - Refactorization Clean Up.
 - Adding more integration tests - fixing bugs along the way with unit tests to cover them.
-- Creating simple implementation of Domain validation.
+- Creating simple implementation of Domain validation using FluentValidation.
+
+### .NET open source packages used in the project:
+- [LightBDD](https://github.com/LightBDD/LightBDD)
+  - opinionated but interesting approach to write simple BDD styled tests.
+  - this was my first time using this package and I will definitely get back to it.
+- [XUnit](https://github.com/xunit/xunit)
+  - my standard go to **Unit Testing** framework.
+  - It doesn't have more complex Assertions like **NUnit** but this can be solved by adding **FluentAssertions**
+- [FluentAssertions](https://github.com/fluentassertins/fluentassertions)
+  - changes the way assertions are written, forcing you to use syntax **object.Should().Be(something)**
+- [Moq](https://github.com/moq/moq)
+  - my go to **Mocking** framework. It just works :)
+- [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json)
+  - Built in serialization provided in MVC.Core are ok but limiting.
+- [FluentValidation](https://github.com/JeremySkinner/FluentValidation)
+  - ASP.Net Core supports model binding and DataComponents attribute based validations, but using these can lead to MVC HTTP layer leaking out to Domain logic.
+  - For me Domain is *sacred* and should be only about my business problem. UI, DB layers are kept away.
+  - FluentValidation provides nice framework to create and wire up validations on your domain objects.
 
 For multiple payments.
 
