@@ -1,6 +1,6 @@
 .PHONY: unit-test, auto-test, integration-test, dynamodb, all-tests, put-multi, put-single
 
-run: dynamodb
+start: dynamodb
 	dotnet run --project src/PaymentsSystemExample.Api/PaymentsSystemExample.Api.csproj
 
 stop:	

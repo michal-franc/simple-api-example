@@ -21,7 +21,7 @@ Payments system API sample using [Form3 API](http://api-docs.form3.tech/) as dom
 
 Go to main folder and
 ```
-make run
+make start
 ```
 This command:
 - starts docker composed [localstack](https://github.com/localstack/localstack) in detached mode with stubbed **DynamoDB**.
