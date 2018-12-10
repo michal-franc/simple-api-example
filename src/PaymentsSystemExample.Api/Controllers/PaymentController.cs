@@ -10,8 +10,6 @@ using PaymentsSystemExample.Api.Extensions;
 
 namespace PaymentsSystemExample.Api.Controllers
 {
-    //TODO: Organisation ID should be in the header? So that you as a user have to make a consciouse choice that i want to get payment for this org?
-    //TODO: ADD Token header + basic auth system to verify if your tokent matches org so that you dont access resources you dont have access to
     [Route("api/v1/[controller]")]
     [ApiController]
     public class PaymentController : ControllerBase
@@ -49,9 +47,6 @@ namespace PaymentsSystemExample.Api.Controllers
             }
         }
 
-        // TODO: return 409 for duplicate error
-        // TODO: we need to verify if the version was not changed and if all validations pass
-
         // Assumed here that with multiple payments I will discard whole batch if one payment is 'incorrect'
         // We only touch database if the whole batch is succesfull (I don't want to deal with transactions or compensating actions at the moment)
         // This forces user to resend whole batch
@@ -84,8 +79,6 @@ namespace PaymentsSystemExample.Api.Controllers
             }
         }
 
-        // TODO: as with PUT - we need to verify if the version was not changed and if all validations pass
-        // TODO: if it is not truth we discard whole request
         [HttpPost]
         public async Task<ActionResult> Post(string paymentsRawData, [FromHeader (Name = "X-CultureCode")]string cultureCode)
         {
@@ -119,8 +112,6 @@ namespace PaymentsSystemExample.Api.Controllers
             var guid = id.TryConvertIdToGuid();
             if(guid == default(Guid))
             { 
-                // TODO: send this message in content negionated format Json or xml - depending on client
-                // At the moment this is a plain text - not perfect
                 return BadRequest($"Incorrect payment id sent - '{id}' -  Expected Guid format.");
             }
 

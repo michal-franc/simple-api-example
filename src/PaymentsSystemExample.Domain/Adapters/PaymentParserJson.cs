@@ -7,7 +7,6 @@ using PaymentsSystemExample.Domain.Adapters.CustomJsonConverters;
 
 namespace PaymentsSystemExample.Domain.Adapters
 {
-    // TODO: This has to be singleton injected
     public class PaymentParserJson : IPaymentParser
     {
         // Outside of this class we wont need to change the parsing errors collection -> changing only to enumeration

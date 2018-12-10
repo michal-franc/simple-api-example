@@ -21,8 +21,6 @@ namespace PaymentsSystemExample.Api.Controllers
             this._paymentService = paymentService;
         }
 
-        //TODO: Paging?
-        //TODO: filters - ??
         [HttpGet("{organisationId}")]
         public async Task<IActionResult> Get(string organisationId)
         {

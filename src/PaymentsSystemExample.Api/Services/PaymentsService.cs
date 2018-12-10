@@ -120,9 +120,6 @@ namespace PaymentsSystemExample.Api.Services
             return validationErrors;
         }
 
-        //TODO: organisation id has to be passed here so that we dont allow users to remove all the payments
-        //TODO: this also needs to be encoded with token
-        //TODO: Should use tombstone here and different worker for data removal (to give ability for user to revert action just in case)
         public async Task<bool> DeletePayment(Guid id)
         {
             if(await _paymentPersistenceService.Delete(id))

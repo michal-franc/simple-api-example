@@ -46,14 +46,7 @@ namespace PaymentsSystemExample.Api
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                //: TODO
-                //app.UseHsts();
-            }
 
-            //: TODO
-            //app.UseHttpsRedirection();
             app.UseMvc();
         }
     }

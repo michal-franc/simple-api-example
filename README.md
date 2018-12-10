@@ -111,54 +111,58 @@ For multiple payments.
   - For me Domain is *sacred* and should be only about my business problem. UI, DB layers are kept away.
   - FluentValidation provides nice framework to create and wire up validations on your domain objects.
 
-### Why I picked up a DynamoDB?
+### Why I picked up DynamoDB?
 
-- I will pick up some document based database or object based one as I dont see a huge benefit of data normalization in this case when the operations are soo simple and based on correltion id - payment id
-- If searching is needed i would project the document database to different form - eg reporting database or used even 'search optimised persistence stores' like elastic search if that would be the requirement.
+- RDBSM is usually my default choice for start. It provides all the guarantess I need, plus can simplify application logic with transaction and rollback handling.
+- At the moment requirements are quite simple - we just list, update, add and get 'objects'.
+  - GET payment is simple and we can fulfill it based on querying either by PaymentId (one payment).
+  - LIST payments is still simple and is based on OrganisationId - give me all payments for organisation
+  - There are no requirements for any filter - like give me a payment with this amount or this beneficiary.
+    - There is no requirement for patch.
+    - So I don't need to fully denormalize the object and can keep 'attributes' potentialy as a JSON blob.
+  - Update is also simple per Payment Id.
+  - Version in json file suggest 'optimistic concurrency'.
+  - What kind of indexes would I need? 
+    - PaymentId 
+    - OrganisationId
+    - Maybe one sort key per processign date
+- Not sure what kind of traffic i can expect -> write vs read? Assuming for this exercise that there will be more reads than writes -> as customer writes a payment once then polls (assuming no loopback with events or websockets) mutliple times to get the status. Ocassionaly user my build a more complex report by listing payments. Both assumptions suggest more reads than writes. Not sure how 'real time should be the system' and what kind of caching we need.
+- Also how eventually consistent do we want the data to be? Do I need strong consistency? Or maybe I can relax some of the guarantees and for instace use 'Read your own Writes' approach to make an ilussion of strong consistency. For this task I will assume strong consistency and very simple system with one API and DB.
+- Given these requirements plus I decided to either go with document or object based database. There is low benefit of normalized data. Given more complicated requirements like filtering of data based on criterias maybe then relational database would make the trick. But if searching is needed I would project the data to a different form - eg reporting database or used 'search optimised persistence stores' like ElasticSearch if full-text search would be a requirement.
 
-Database choice:
-- Which database to pick heh?
-- At the moment requirements are quite simple - we just list, update, add and get 'objects'
-- get is simple and based on correlation id -> payment id
-- list is still simple and is based on correlation id organisation -> give me all payments for organisation
-- at the moment I don't have any filter, options like give me a payment with this amount
-- update is also simple per payment id only
-
-- I am assuming no normalization and that i want to store payments as simple objects - documents.
-- What kind of indexes i need? One is - per paayment id another one is per organisation id -> dont need more at the moment?
-- Maybe one sort key per processign date
-- Not sure what kind of traffic i can expect -> write vs read? assuming for this exercise that there will be more reads than writes -> as customer writes a payment once then polls (assuming no loopback with events or websockets) mutliple times to get the status. Ocassionaly building report by listing payments. So more reads than writes. Not sure how 'real time should be the system' and what kind of caching we need. 
-
-- First choice : RDBSM
+#### RDBSM
  - mysql or sql 
-  + supports proper transactions that would let me simplify application level and synchronization and just let rdbsm do the work
-  + get indexing support - i can create many different indexes + query optimization layer - can be usefull if quesries are 'complicated'
-  + encryption at rest support?
-  + I could use RDS or AURORA in AWS
-  - at the moment i have no requirements for more complicated queries
-  - if i dont use managed cluster or instance eg AWS (Aurora or RDS) i will have to deal for myself with the support -> plus manual sharding and replication - not sure if our team has experience with it
+    - supports proper transactions that would let me simplify application level and synchronization and just let rdbsm do the work
+    - indexing support - I can create many different indexes + query optimization plans can help with the load - can be usefull if quesries are 'complicated'
+    - I could use RDS or AURORA in AWS - both are managed solutions - providing clusters (Aurora might soon support Multi-Master setup).
+      - encryption at rest support
+    - at the moment i have no requirements for more complicated queries
+    - if I dont use managed cluster or instance eg AWS (Aurora or RDS) I will have to deal with the support
+      - plus sharding and replication - not sure if our team has experience with it
+    - if mysql - which engine to pick? InnoDB is apparently recommended as the default one.
  
-- Second Choice: DynamoDB
- + fully managed
- + i have a lot of experience with it
- + fresh from Reinvent on demand dynamo! (can be risky but no need to fine tune read writes capacity!! yey)
- + it magically 'works' and scales if you do you home work with proper partitioning
- + column wide schema less -> can be usefull but in this case maybe not the thing i want
- + i can extract most importants columns like payment - id, organisation id + processing date and keep the rest as a json blob
- + no need to wory about data replication, sharding etc
- + encryption at rest ( for aws centric company perfect choice with kms )
- + fine tunting for eventual or strong consistency
+#### DynamoDB
+ - fully managed
+ - speed of development
+ - simplicity with hidden complexity (you have to be carefull)
+ - I have a lot of experience with it
+ - fresh from Re-Invent - on demand dynamo! (can be risky but no need to fine tune read write capacity!! yey)
+ - it magically 'works' and scales if you do you home work with proper partitioning
+ - column wide schema less -> can be usefull but in this case maybe not the thing I want (it can also be scary)
+ - I can extract most importants columns like PaymentId, OrganisationId, maybe ProcessingDate and keep the rest as a json blob
+ - no need to wory about data replication, sharding etc
+ - encryption at rest ( for aws centric company perfect choice with kms )
  - limitations on the 'data' footprint (one column value cannot reach certain amount of data)
  - partitioning strategy is really important as we want to avoid 'hot' nodes scenario that is making life difficult
- - Indexing is 'limited' - but for this scenario good enoung
+ - ndexing is 'limited' - but for this scenario good enough
  - API is 'complicated'
  - costs 'can' get out of hand
 
-- Third Choice: MongoDB
- + it is no longer 'web scale' after last jepsen tests - it is a proper stable 'persistence store'
- + documents fit in perfectly the data i want to keep
- + atlas! - managed mongo looks really interesting
- + transactions (atomic operations on document but recently they added multi document transactions) - (no trasaanctions for clusters yet)
+#### MongoDB
+ - it is no longer 'web scale' after last jepsen tests - it is a proper stable 'persistence store'.
+ - payment as a 'thing' fits perfectly to 'document' based approach
+ - atlas! - managed mongo looks really interesting
+ - transactions (atomic operations on document but recently they added multi document transactions)
  - is Atlas scalable? hassle free enough?
  - no experience apart from simple hobby use cases years ago
 
@@ -175,31 +179,42 @@ Database choice:
 
 ### Things I would do with more time
 
-- TODO: dont forget to prepars the code with static analysis code checkes like stylecop
-- TODO: add compression and caching
-- TODO: writes tests to verify cache and gzip
-- TODO: throttling on the api - return 429 -> of course ideally this should be on a different layer -> api gateway or even things like incapsula WAF DDOS protection layer
-- TODO: metrics with prometheus
-- TODO: influxDB + grafana
-- TODO: logs through something simple? (dont want to create elasticsearch and kibana)
-- TODO: load balancer proxy on nginx + 3 instances for reliability -> of course using cloud i would use route53 and ALB + simple DNS for service discovery
-- TODO: test if it builds on windows
-- TODO: do a chaos engineering round of tests - both the app and the unit tets (break code and see what kind of messages does the test give is it understood enough?)
-- TODO: add license file
-
-TODO
-API needs to provide:
-- HTOES -> https://github.com/faniereynders/aspnetcore-hateoas
-- Content negotation
-- Security Tokens in header -> Fake Auth server? Option for dev machine -> and tests
-- Swagger ??
-- Concurrency? (use version on document)
-- Add Logging + Metrics? Prometheus?
-- Caching and discussion about what kinf of caching layer to add
-
-LOAD TESTS! using k6 -> using my own personal project
-
-HTOES: -> lib in .NET
+- [] add license file
+- [] limit list payments to 10 records
+  - [] paging
+  - [] filters
+- [] compression and caching of requests
+- [] delete - get - should require organisationId in the request to prevent users from scrapping data of other orgs or removing data
+  - [] Security tokens and simple authorization - organisation id in the token vs orgnisation id used in the queries to data store
+- [] handling creation of duplicate payments - and 409 code
+- [] domain in separate project
+  - [] json objects as separte classess in separete project
+- [] more unit tests coverage
+- [] more integration tests coverage
+- [] testing in on the cloud (AWS)
+  - [] running on k8s cluster
+- [] optimistic concurrency when updating records
+- [] load testing using k6 and my own simple example - https://github.com/michal-franc/docker-k6-influxdb-grafana
+- [] Pass with more robust static code analysis tools like stylecop
+- [] write tests to verify cache and compression
+- [] throttling on the api 
+  - ideally this should be on a different layer like api gateway of DDOS WAF protection
+- [] metrics with prometheus
+- [] influxDB + grafana for metrics
+- [] logging to file
+- [] High Availability - 3 instances - using docker and some load balancer on nginx 
+  - [] route53 and ALB simulation on localstack (not sure if this is possible?)
+- [] test if it builds on windows :)
+- [] do a chaos engineering round of tests 
+  - both the app and the unit tets (break code and see what kind of messages does the test give is it easy to understand?)
+- [] Hateos like in the example file
+- [] Content negotation
+- [] Better isolation of data for organisations so that everything is not in single table
+- [] Proper design strategy on partitioning key pick - should we use composite? what sort key? etc etc
+- [] Swagger and API discoverability
+- [] Delete using tombstone approach with removal eventually consitent to enable 'accidental' recovery
+- [] Patch Verb support
+- [] https
 
 ### System I would build given 'infinite' amount of time and resources
 
