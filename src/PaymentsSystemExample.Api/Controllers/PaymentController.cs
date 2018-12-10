@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using PaymentsSystemExample.Domain.Adapters;
 using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 using PaymentsSystemExample.Api.Services;
@@ -14,11 +15,13 @@ namespace PaymentsSystemExample.Api.Controllers
     [ApiController]
     public class PaymentController : ControllerBase
     {
-        private IPaymentService _paymentService;
+        private readonly IPaymentService _paymentService;
+        private readonly ILogger _logger;
 
-        public PaymentController(IPaymentService paymentService)
+        public PaymentController(IPaymentService paymentService, ILogger<PaymentController> logger)
         {
-            this._paymentService = paymentService;
+            _paymentService = paymentService;
+            _logger = logger;
         }
 
         [HttpGet("{id}")]
@@ -41,8 +44,9 @@ namespace PaymentsSystemExample.Api.Controllers
 
                 return Ok(payment);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex, "Error on Get");
                 return StatusCode(500);
             }
         }
@@ -73,8 +77,9 @@ namespace PaymentsSystemExample.Api.Controllers
                     return Ok();
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex, "Error on Put");
                 return StatusCode(500);
             }
         }
@@ -100,8 +105,9 @@ namespace PaymentsSystemExample.Api.Controllers
                     return Ok();
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex, "Error on Post");
                 return StatusCode(500);
             }
         }
@@ -126,8 +132,9 @@ namespace PaymentsSystemExample.Api.Controllers
                     return NotFound();
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex, "Error on Delete");
                 return StatusCode(500);
             }
         }
