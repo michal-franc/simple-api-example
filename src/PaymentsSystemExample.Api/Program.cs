@@ -19,6 +19,10 @@ namespace PaymentsSystemExample.Api
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .ConfigureLogging((ctx, logging) => 
+                {
+                    logging.AddConsole();
+               })
                 .UseStartup<PaymentApiStartup>();
     }
 }
