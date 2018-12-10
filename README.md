@@ -178,9 +178,11 @@ For multiple payments.
   - Ideally i would call the attributes 'ExternalPayment' and our main object InternalPayment - or figure out a different terminilogoy on how to differentatie beetwen them - int he form3 api reference i found that you fetch the payment using guid id not the 'integer' or stirng one 
 
 ### Things I would do with more time
-
+- [ ] add diagram for the 'better' architecture with description
+- [ ] add validator unit tests examples
 - [ ] add license file
-- [ ] limit list payments to 10 records
+- [ ] asciicinema animations
+- [ ] limit list payments to 10 records - to block too big requests
   - [ ] paging
   - [ ] filters
 - [ ] compression and caching of requests
@@ -188,7 +190,7 @@ For multiple payments.
   - [ ] Security tokens and simple authorization - organisation id in the token vs orgnisation id used in the queries to data store
 - [ ] handling creation of duplicate payments - and 409 code
 - [ ] domain in separate project
-  - [ ] json objects as separte classess in separete project
+  - [ ] json objects as separte classess in separete project to keep JSON annotations 'mess' in separate 'module'
 - [ ] more unit tests coverage
 - [ ] more integration tests coverage
 - [ ] testing in on the cloud (AWS)
@@ -213,7 +215,9 @@ For multiple payments.
 - [ ] Proper design strategy on partitioning key pick - should we use composite? what sort key? etc etc
 - [ ] Swagger and API discoverability
 - [ ] Delete using tombstone approach with removal eventually consitent to enable 'accidental' recovery
+- [ ] All data validated to prevent corrupted data entering the system
 - [ ] Patch Verb support
+- [ ] infrastracture as a code instead of bash script to spin up dynamodb (terraform or cloudformation)
 - [ ] https
 
 ### System I would build given 'infinite' amount of time and resources
