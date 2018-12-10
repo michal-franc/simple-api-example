@@ -5,6 +5,9 @@ Payments system API sample using [Form3 API](http://api-docs.form3.tech/) as dom
 - [.net code sdk 2.1](https://dotnet.microsoft.com/download)
 - [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
   - to create dynamodb on localstack
+- [docker](https://docs.docker.com/install/linux/docker-ce/binaries/#prerequisites) 
+  - Docker Engine 17.12 CE (tested on 17.12.0-c, build c97c6d6)
+  - if you have older or newer version you will need to change **docker-compose.yml** file version based on [link](https://docs.docker.com/compose/compose-file/#compose-and-docker-compatibility-matrix)
 ##### Optional
 - [entr](http://eradman.com/entrproject/), [ripgrep](https://github.com/BurntSushi/ripgrep)
   - to run make auto-test 
@@ -18,7 +21,6 @@ make run
 ```
 This command:
 - starts docker composed [localstack](https://github.com/localstack/localstack) in detached mode with stubbed **DynamoDB**.
-- waits 5 seconds
 - runs a script to create **payments** table on localstack DynamoDB
 - starts dotnet application on port **5000** for http and **5001** for https
 
@@ -35,6 +37,12 @@ Go to main folder and
 ```
 make all-tests
 ```
+
+This command:
+- runs unit tests
+- starts up localstack with dynamodb and runs a script to create payments table
+- runs integration tests
+- stops localstack with dynamodb
 
 ### How to populate DynamoDB?
 Go to main folder and
@@ -58,7 +66,7 @@ For multiple payments.
 - TODO: load balancer proxy on nginx + 3 instances for reliability -> of course using cloud i would use route53 and ALB + simple DNS for service discovery
 - TODO: test if it builds on windows
 - TODO: do a chaos engineering round of tests - both the app and the unit tets (break code and see what kind of messages does the test give is it understood enough?)
-- TODO: versioning
+- TODO: add license file
 
 Database choice:
 - Which database to pick heh?
