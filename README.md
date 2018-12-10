@@ -180,7 +180,7 @@ For multiple payments.
 ### Things I would do with more time
 - [ ] add diagram for the 'better' architecture with description
 - [ ] add validator unit tests examples
-- [ ] add license file
+- [x] add license file
 - [ ] asciicinema animations
 - [ ] limit list payments to 10 records - to block too big requests
   - [ ] paging
