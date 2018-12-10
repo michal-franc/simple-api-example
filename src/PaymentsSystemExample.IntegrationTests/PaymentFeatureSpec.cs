@@ -8,6 +8,21 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using FluentAssertions;
 using PaymentsSystemExample.Api;
+using Microsoft.AspNetCore.Builder;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+using PaymentsSystemExample.Api.Formatters;
+using PaymentsSystemExample.Api.Services;
+using PaymentsSystemExample.Domain.Adapters;
+using PaymentsSystemExample.Domain.Adapters.JsonObjects;
 
 // TODO: Real DB service -> docker dynamodb
 // TODO: Mocked DB using localstack -> usefull to test interaction with API
@@ -47,6 +62,21 @@ using PaymentsSystemExample.Api;
 
 namespace PaymentsSystemExample.IntegrationTests
 {
+    internal static class TestPaymentBuilder 
+    {
+        public static Payment Create(Guid id)
+        {
+            var payment = new Payment();
+            payment.Id = id;
+            payment.OrganisationId = Guid.NewGuid();
+            payment.Version = 0;
+            payment.Type = "Payment";
+            payment.Attributes = new Attributes();
+
+            return payment;
+        }
+    }
+
     [FeatureDescription(
         @"As a user when I call Payment API to GET payment"
     )]
@@ -58,89 +88,69 @@ namespace PaymentsSystemExample.IntegrationTests
 
         public PaymentFeatureSpec()
         {
-            var server = new TestServer(new WebHostBuilder().UseStartup<PaymentApiStartup>());
+            var hostBuilder = new WebHostBuilder()
+                .ConfigureServices(coll =>{
+                    //var paymentPersistenceExisting = coll.FirstOrDefault(d => d.ServiceType == typeof(IPaymentPersistenceService));
+                    //coll.Remove(paymentPersistenceExisting);
+                    //coll.AddSingleton<IPaymentPersistenceService, InMemPersistenceService>();
+                })
+                .UseStartup<PaymentApiStartup>();
+            var server = new TestServer(hostBuilder);
             _client = server.CreateClient();
         }
 
         [Scenario]
         [MultiAssert]
-        [Label("And I get payment that doesn't exist")]
-        public void PaymentDoesntExistTest()
-        {
-            var nonExistingPaymentId = Guid.NewGuid();
-
-            Runner.RunScenario(
-                _ => I_call_api_with_id(nonExistingPaymentId),
-                _ => I_get_status_code(404)
-            );
-        }
-
-        [Scenario]
-        [MultiAssert]
         [Label("And I get payment that does exist")]
-        public void PaymentDoesExistTest()
+        public async Task PaymentDoesExistTest()
         {
-            var existingPaymentId = Guid.NewGuid();
+            var paymentId = Guid.NewGuid();
 
-            Runner.RunScenario(
-                //TODO: This step cannot be part of this test as we then test two functionalities if put fails this one will also fail - tests should be isolated
-                _ => I_populate_db_with_payment(existingPaymentId),
-                _ => I_call_api_with_id(existingPaymentId),
-                _ => I_get_status_code(200),
-                _ => I_get_payment_data_in_content()
+            await Runner.RunScenarioAsync(
+               _ => I_populate_db_with_payment(paymentId),
+               _ => I_call_api_with_id(paymentId),
+               _ => I_get_status_code(200),
+               _ => I_get_payment_data_in_content()
             );
         }
 
-        [Scenario]
-        [MultiAssert]
-        [Label("And I call api with incorrect id value")]
-        public void PaymentIncorrectCall()
+        private async Task I_populate_db_with_payment(Guid id)
         {
-            var incorrectId = "incorrect_ID";
-            Runner.RunScenario(
-                _ => I_call_api_with_incorrect_id(incorrectId),
-                _ => I_get_status_code(400)
-                // TODO: Should we verify error messsages?
-                //_ => I_get_error_message("")
-            );
-        }
-
-        private void I_populate_db_with_payment(Guid id)
-        {
-            //TODO: need db implementation here :X
+            var persister = new LocalPaymentPersistenceServiceDynamoDB();
+            await persister.Create(new [] { TestPaymentBuilder.Create(id) });
         }
 
         // TODO: should this be checking status code? or should i hide code and use -> BadRequest -> ok etc
-        private void I_get_status_code(int expectedStatusCode)
+        private async Task I_get_status_code(int expectedStatusCode)
         {
             _message.StatusCode.Should().Be(expectedStatusCode);
         }
 
-        private void I_delete_payment_with_id(Guid id)
+        private async Task I_delete_payment_with_id(Guid id)
         {
             //TODO: remove result and make it async requires LightBDD Async Scenarios
-            var test = _client.DeleteAsync($"/api/payment/{id}").Result;
+            var test = await _client.DeleteAsync($"/api/v1/payment/{id}");
         }
 
-        private void I_create_payment_with_id(Guid id)
+        private async Task I_create_payment_with_id(Guid id)
         {
             //TODO: remove result and make it async requires LightBDD Async Scenarios
-            var test = _client.PutAsJsonAsync($"/api/payment/{id}", id).Result;
+            var test = await _client.PutAsJsonAsync($"/api/v1/payment/{id}", id);
         }
 
-        private void I_call_api_with_id(Guid id)
+        private async Task I_call_api_with_id(Guid id)
         {
             //TODO: remove result and make it async requires LightBDD Async Scenarios
-            _message = _client.GetAsync($"/api/payment/{id}").Result;
+            _message = await _client.GetAsync($"/api/v1/payment/{id}");
         }
 
-        private void I_call_api_with_incorrect_id(string id)
+        private async Task I_call_api_with_incorrect_id(string id)
         {
             //TODO: remove result and make it async requires LightBDD Async Scenarios
-            _message = _client.GetAsync($"/api/payment/{id}").Result;
+            _message = await _client.GetAsync($"/api/v1/payment/{id}");
         }
 
-        private void I_get_payment_data_in_content()
+        private async Task I_get_payment_data_in_content()
         {
             _message.Content.Should().NotBeNull();
         }
