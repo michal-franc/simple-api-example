@@ -1,19 +1,18 @@
 Table of Contents
 =================
 
-         * [Summary:](#summary)
-         * [Required to Run:](#required-to-run)
-               * [Optional](#optional)
-         * [How to run?](#how-to-run)
-         * [How to stop and cleanup?](#how-to-stop-and-cleanup)
-         * [How to run tests?](#how-to-run-tests)
-         * [How to populate DynamoDB?](#how-to-populate-dynamodb)
-         * [How I approached this task?](#how-i-approached-this-task)
-         * [.NET open source packages used in the project:](#net-open-source-packages-used-in-the-project)
-         * [Why I picked up DynamoDB?](#why-i-picked-up-dynamodb)
-   * [Table of Contents](#table-of-contents)
+  * [Summary:](#summary)
+  * [Required to Run:](#required-to-run)
+    * [Optional](#optional)
+  * [How to run?](#how-to-run)
+  * [How to stop and cleanup?](#how-to-stop-and-cleanup)
+  * [How to run tests?](#how-to-run-tests)
+  * [How to populate DynamoDB?](#how-to-populate-dynamodb)
+  * [How I approached this task?](#how-i-approached-this-task)
+  * [.NET open source packages used in the project:](#net-open-source-packages-used-in-the-project)
+  * [Why I picked up DynamoDB?](#why-i-picked-up-dynamodb)
 
-Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+*Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)*
 
 ### Summary:
 
@@ -254,3 +253,4 @@ As i approached doing this.
 - https://github.com/justeat/LocalDynamoDb <- I could install this package from JE - we use it internally but it requires java so i decided to go with LocalStack
 
 
+[Table of Contents](#table-of-contents)
