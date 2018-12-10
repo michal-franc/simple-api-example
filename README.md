@@ -14,14 +14,14 @@ Table of Contents
 
 *Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)*
 
-### Summary:
+### Summary
 
 !["basic diagram"](/diagrams/basic_diagram.png)
 
 Payments system API sample using [Form3 API](http://api-docs.form3.tech/) as domain example. Approach with one single API.
 - code was written on Linux Mint using I3wm and vscode + cli scripts
 
-### Required to Run:
+### Required to Run
 - [.net code sdk 2.1](https://dotnet.microsoft.com/download)
 - [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
   - to create dynamodb on localstack
@@ -110,19 +110,10 @@ For multiple payments.
   - For me Domain is *sacred* and should be only about my business problem. UI, DB layers are kept away.
   - FluentValidation provides nice framework to create and wire up validations on your domain objects.
 
-### Why I picked up DynamoDB?
+### Why I picked up a DynamoDB?
 
-- TODO: dont forget to prepars the code with static analysis code checkes like stylecop
-- TODO: add compression and caching
-- TODO: writes tests to verify cache and gzip
-- TODO: throttling on the api - return 429 -> of course ideally this should be on a different layer -> api gateway or even things like incapsula WAF DDOS protection layer
-- TODO: metrics with prometheus
-- TODO: influxDB + grafana
-- TODO: logs through something simple? (dont want to create elasticsearch and kibana)
-- TODO: load balancer proxy on nginx + 3 instances for reliability -> of course using cloud i would use route53 and ALB + simple DNS for service discovery
-- TODO: test if it builds on windows
-- TODO: do a chaos engineering round of tests - both the app and the unit tets (break code and see what kind of messages does the test give is it understood enough?)
-- TODO: add license file
+- I will pick up some document based database or object based one as I dont see a huge benefit of data normalization in this case when the operations are soo simple and based on correltion id - payment id
+- If searching is needed i would project the document database to different form - eg reporting database or used even 'search optimised persistence stores' like elastic search if that would be the requirement.
 
 Database choice:
 - Which database to pick heh?
@@ -170,17 +161,32 @@ Database choice:
  - is Atlas scalable? hassle free enough?
  - no experience apart from simple hobby use cases years ago
 
-MakeFile: 
-- what are the options available
-- what is entr
-- what is rg
+### Other Notes
+- HTTP for me is just a 'layer' that exposes my domain. So I started by thinking about my domain object - Payment.
+- Usually I create classess and test code in the same file later moving them around to proper projects. That gives me fast feedback loop without context switching and thinking how to leverage file system to describe my code. I first experiment with my problem space and domain - discovering it before making decision how to properly encapsulate everything so that it makes sense.
+- When writing code I use auto test scripts (entr + ripgrep) to enable continous testin when file change (similar to [wallaby.js](https://wallabyjs.com/) or [NCrunch](https://www.ncrunch.net/)).
+- For Payment type initialy my instict was to use Enum but then I realised that if I pick up a document or relational persistent store - it doesn't really matter if I safe couple of bytes for not storing string. 
+- For processing date I was a bit surprised why the date doesn't have any time zone specific information. Then I found that it is actually assuming format 'yyyy-MM-dd'.
+- Initialy tests used versy simple ine memory database - a stub using 'List'. This speeds up initial development without context switching to DB layer.
+- While building test scenarios for parser, I discovered that there are two ID's.
+  - I made an assumption that Id of the metadata is the correct id to represent Id in our system and the one in the attributes is for 'external consumers id representaion and correlation'.
+  - Ideally i would call the attributes 'ExternalPayment' and our main object InternalPayment - or figure out a different terminilogoy on how to differentatie beetwen them - int he form3 api reference i found that you fetch the payment using guid id not the 'integer' or stirng one 
 
-Picked frameworks Decisions:
-- LightBDD -> i have most expewrience with specflow but this one is cumbersone to use and requires extensions to visual studio - i am mostly vim, visual studio code user so i had to find alternative and i found multiple frameworks -> picked up LightBDD (which was not easy to set up as their docs were lacking (but i pushed a PR with more information to their docs))
-- Xunit
-- FluenaAssertions
-- LocalStack
+### Things I would do with more time
 
+- TODO: dont forget to prepars the code with static analysis code checkes like stylecop
+- TODO: add compression and caching
+- TODO: writes tests to verify cache and gzip
+- TODO: throttling on the api - return 429 -> of course ideally this should be on a different layer -> api gateway or even things like incapsula WAF DDOS protection layer
+- TODO: metrics with prometheus
+- TODO: influxDB + grafana
+- TODO: logs through something simple? (dont want to create elasticsearch and kibana)
+- TODO: load balancer proxy on nginx + 3 instances for reliability -> of course using cloud i would use route53 and ALB + simple DNS for service discovery
+- TODO: test if it builds on windows
+- TODO: do a chaos engineering round of tests - both the app and the unit tets (break code and see what kind of messages does the test give is it understood enough?)
+- TODO: add license file
+
+TODO
 API needs to provide:
 - HTOES -> https://github.com/faniereynders/aspnetcore-hateoas
 - Content negotation
@@ -194,63 +200,7 @@ LOAD TESTS! using k6 -> using my own personal project
 
 HTOES: -> lib in .NET
 
- -> Things that need to invalidate payment
-   -> Incorrect Type
-   -> version -> ? how to use it?
-   -> organisation_id -> if not existing error
-
-   -> validations
-      -> amount -> . vs , -> throw error no auto conversion -> assume only .
-      -> check if is guid -> check if exists
-      -> validate if payload ID was used or not
-
- -> When I post payment with same ID again it clashes and returns error
-   -> should i return message that payment already exists? or could this be a security hole?
-   -> as if someone gest a hold of it they can check if payments exists?
-   -> ok assume that this is not a security hole and auth - org correlation is good enough
-
- -> When i Post to endpoint that doesnt exit i get 404
- -> When i put a proper payment i get 200
- -> When i ask for paayment info and it doesnt exist i get 404
- -> When i ask for exisitng payment i get the data and 200
- -> When i delete payment that doesnt exist i get 404
- -> When i delete payment that does exist i get 200
- -> When i delete payment that was already deleted i get 404
- -> when i post (update) payment that doesnt exist i get 404
- -> When i post (update) that exits i get 200
-
- -> Integraiton test for processing date -> how to deal with timezones?
-
-- as a User of this API what kind of errors I would like to see?
-- as a User of this API what kind of 'faults' I could make? (looking at payload)
-
--> create behaviours out of this -> codify them in the BDD styled tests
--> First list in TODO comments in the BDD styles tests
-
-As i approached doing this.
-- HTTP for me is just a 'layer' that exposes my domain.
-- So i started by thinking aobut my domain object - Payment.
-- Usually i create classess and test code in the same repo and then moving them around to proper projects. That gives my fast feedback loop without yet thinking on file system representation of my code. I first experiment with my problem space and domain - discovering it before making deicsion how to properly encapsulate everything so that it makes sense. As the domain here is simple i didnt have to do things like potential event storming and domain modelling with domain experts.
-- I also use auto test scripts using entr that enables me to run unit tests quicklky when the file is changed (similar to wallaby.js or ncrunch)
-- Provided json representation of domain for me is just a projection
-- I will pick up some document based database or object based one as I dont see a huge benefit of data normalization in this case when the operations are soo simple and based on correltion id - payment id
-- If searching is needed i would project the document database to different form - eg reporting database or used even 'search optimised persistence stores' like elastic search if that would be the requirement.
-- This task is to provide api that is able to operate on 'Objects' per PaymentId
-- For account tyupe and payment type initialy my instict was to use Enum but then i realised that if i picked up document or object persistent store - it doesn't really matter if i safe couple of bytes for not storing string. Also account type and payment type can be dynamic in the future and we might control what values are acceptable usiung different modularised logic instead of 'compiled type' typ safety check that would in the future require from us deploy of application to make changes on prod. Same with payment sub type and type
-- For processing date i was a bit surprised why the date doesnt have any time zone specific informatin. assument that date in there is in UTC format and reflected this correctly in Domain.
-- I created direct 'adapter' from http to domain. Didn't wanted to use reflection as it is slow and we need to optimize for write / read throughput.
-- Started with Payment mapping as this was a great way for me to 'explore' how the payment object looks like and what kind of problems i can achieve. Created IPayment Mapper and first implementaiton for Json files (with this interface we are able to extend mapper to XML or orther formats)
-- After mapping started working on simple BDD style tests to cover basic scenarios
-- Initialy tests were suppoirted by versy simple inmemd 'DB' service that was just stubbing database behind the scenes.
-- After establishing most of the scenarios in a text form - pseudo code I staaarted implementing them
-- while building test scenarios i Discovered that tehere are two ids - id of the metadata and id of the payment
- - I made an assumption that id of the metadata is the correct id to represent Id in our system
-   - and the one in the attributes is for 'external consumers id representaion and correlation'
-- Ideally i would call the attributes 'ExternalPayment' and our main object InternalPayment - or figure out a different terminilogoy on how to differentatie beetwen them - int he form3 api reference i found that you fetch the payment using guid id not the 'integer' or stirng one 
-- DEcided to use microsoft standard containeer for IOC -> No need to add cusotm open source one unless there is a need to -> i will start with the simple solution
-
-- DynamoDB development
-- https://github.com/justeat/LocalDynamoDb <- I could install this package from JE - we use it internally but it requires java so i decided to go with LocalStack
+### System I would build given 'infinite' amount of time and resources
 
 
 [Table of Contents](#table-of-contents)
