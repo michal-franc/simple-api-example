@@ -1,11 +1,19 @@
 version: '3.5'
 
 services:
+  payments-system-example:
+    image: michal-franc-payments
+    ports:
+      - "5000:5000"
+    links:
+      - localstack
   localstack:
     image: localstack/localstack
     ports:
       - "4567-4584:4567-4584"
       - "${PORT_WEB_UI-8080}:${PORT_WEB_UI-8080}"
+    expose:
+      - "4569"
     environment:
       #- SERVICES=${SERVICES- }
       - SERVICES=dynamodb
