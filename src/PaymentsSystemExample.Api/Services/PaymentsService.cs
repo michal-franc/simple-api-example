@@ -10,15 +10,17 @@ namespace PaymentsSystemExample.Api.Services
     public class ValidationErrors
     {
         private List<string> _parsingErrors;
-        private Dictionary<string, string> _domainErrors;
+        private Dictionary<string, Dictionary<string, string>> _domainErrors;
         public IEnumerable<string> ParsingErrors => _parsingErrors;
-        public IReadOnlyDictionary<string, string> DomainErrors => _domainErrors;
+
+        // I could use IReadOnlyDictionary here due to limitatation of .NET generics
+        public IReadOnlyDictionary<string, Dictionary<string,string>> DomainErrors => _domainErrors;
         public bool HasErrors => _parsingErrors.Count > 0 || _domainErrors.Count > 0;
 
         public ValidationErrors()
         {
             _parsingErrors= new List<string>();
-            _domainErrors = new Dictionary<string, string>();
+            _domainErrors = new Dictionary<string, Dictionary<string, string>>();
         }
 
         public void AddParsingError(string error)
@@ -26,9 +28,13 @@ namespace PaymentsSystemExample.Api.Services
             _parsingErrors.Add(error);
         }
         
-        public void AddDomainError(string attribute, string error)
+        public void AddDomainError(string objectId, string attribute, string error)
         {
-            _domainErrors.Add(attribute, error);
+            if(!_domainErrors.ContainsKey(objectId))
+            {
+                _domainErrors.Add(objectId, new Dictionary<string,string>());
+            }
+            _domainErrors[objectId].Add(attribute, error);
         }
     }
 
@@ -66,27 +72,9 @@ namespace PaymentsSystemExample.Api.Services
 
         public async Task<ValidationErrors> UpdatePayments(string rawPaymentsData, string cultureCode)
         {
-            var validationErrors = new ValidationErrors();
-
             var payments = _paymentParser.Parse(rawPaymentsData, cultureCode);
 
-            if(_paymentParser.HasErrors)
-            {
-                foreach(var parsingError in _paymentParser.ParsingErrors)
-                {
-                    validationErrors.AddParsingError(parsingError);
-                }
-            }
-
-            foreach(var payment in payments)
-            {
-                //var domainErrors = payment.Validate();
-                //foreach(var domainError in domainErrors)
-                //{
-                //   validationErrors.AddDomainError(domainError.paymentId, domainError.attribute, domainError.error);
-                //}
-            }
-
+            var validationErrors = CheckValidationErrors(payments);
             if(!validationErrors.HasErrors)
             {
                 await _paymentPersistenceService.Update(payments);
@@ -97,9 +85,20 @@ namespace PaymentsSystemExample.Api.Services
 
         public async Task<ValidationErrors> CreatePayments(string rawPaymentsData, string cultureCode)
         {
-            var validationErrors = new ValidationErrors();
-
             var payments = _paymentParser.Parse(rawPaymentsData, cultureCode);
+
+            var validationErrors = CheckValidationErrors(payments);
+            if(!validationErrors.HasErrors)
+            {
+                await _paymentPersistenceService.Create(payments);
+            }
+
+            return validationErrors;
+        }
+
+        private ValidationErrors CheckValidationErrors(IEnumerable<Payment> payments)
+        {
+            var validationErrors = new ValidationErrors();
 
             if(_paymentParser.HasErrors)
             {
@@ -111,16 +110,11 @@ namespace PaymentsSystemExample.Api.Services
 
             foreach(var payment in payments)
             {
-                //var domainErrors = payment.Validate();
-                //foreach(var domainError in domainErrors)
-                //{
-                //   validationErrors.AddDomainError(domainError.paymentId, domainError.attribute, domainError.error);
-                //}
-            }
-
-            if(!validationErrors.HasErrors)
-            {
-                await _paymentPersistenceService.Create(payments);
+                var domainErrors = payment.Validate();
+                foreach(var domainError in domainErrors)
+                {
+                   validationErrors.AddDomainError(payment.Id.ToString(), domainError.Key, domainError.Value);
+                }
             }
 
             return validationErrors;

@@ -53,8 +53,8 @@ namespace PaymentsSystemExample.IntegrationTests.PaymentsFeaturesSpec
 
         [Scenario]
         [MultiAssert]
-        [Label("With Invalid Payment")]
-        public async Task WithInvalidPayment()
+        [Label("With Payment amount -1")]
+        public async Task WithNegativeAmount()
         {
             var paymentId = Guid.NewGuid();
             var payment = TestPaymentBuilder.Create(paymentId);
@@ -63,7 +63,23 @@ namespace PaymentsSystemExample.IntegrationTests.PaymentsFeaturesSpec
             await Runner.RunScenarioAsync(
                _ => I_call_api_put_with_culture_code(payment, "en-GB"),
                _ => I_get_status_code(400),
-               _ => I_can_see_a_message_containing("Amount should be bigger than 0.")
+               _ => I_can_see_a_message_containing("Amount should be greater than 0.")
+            );
+        }
+
+        [Scenario]
+        [MultiAssert]
+        [Label("With Payment Type missing")]
+        public async Task WithMissingPaymentType()
+        {
+            var paymentId = Guid.NewGuid();
+            var payment = TestPaymentBuilder.Create(paymentId);
+            payment.Type = string.Empty;
+
+            await Runner.RunScenarioAsync(
+               _ => I_call_api_put_with_culture_code(payment, "en-GB"),
+               _ => I_get_status_code(400),
+               _ => I_can_see_a_message_containing("Payment Type missing.")
             );
         }
     }

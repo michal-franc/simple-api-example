@@ -13,6 +13,7 @@ namespace PaymentsSystemExample.IntegrationTests.TestDataBuilders
             payment.Version = 0;
             payment.Type = "Payment";
             payment.Attributes = new Attributes();
+            payment.Attributes.Amount = 10.0m;
 
             return payment;
         }
