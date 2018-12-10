@@ -1,6 +1,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
 
 using Moq;
@@ -15,13 +16,15 @@ namespace PaymentsSystemExample.UnitTests.PaymentControllerTests
 {
     public class PaymentControllerTests_WhenCallingDelete
     {
+        Mock<ILogger<PaymentController>> _loggerMock = new Mock<ILogger<PaymentController>>(); 
+
         [Fact]
         public async Task AndThereIsExeption_ThenReturn500()
         {
             var paymentServiceMock = new Mock<IPaymentService>();
             paymentServiceMock.Setup(x => x.DeletePayment(It.IsAny<Guid>())).ThrowsAsync(new Exception());
 
-            var sut = new PaymentController(paymentServiceMock.Object);
+            var sut = new PaymentController(paymentServiceMock.Object, _loggerMock.Object);
 
             var result = await sut.Delete(Guid.NewGuid().ToString());
 
@@ -37,7 +40,7 @@ namespace PaymentsSystemExample.UnitTests.PaymentControllerTests
             var nonExistingPaymentId = Guid.NewGuid();
             var paymentServiceMock = new Mock<IPaymentService>();
             paymentServiceMock.Setup(x => x.DeletePayment(nonExistingPaymentId)).ReturnsAsync(false);
-            var sut = new PaymentController(paymentServiceMock.Object);
+            var sut = new PaymentController(paymentServiceMock.Object, _loggerMock.Object);
 
             var result = await sut.Delete(nonExistingPaymentId.ToString());
 
@@ -50,7 +53,7 @@ namespace PaymentsSystemExample.UnitTests.PaymentControllerTests
             var existingPaymentId = Guid.NewGuid();
             var paymentServiceMock = new Mock<IPaymentService>();
             paymentServiceMock.Setup(x => x.DeletePayment(existingPaymentId)).ReturnsAsync(true);
-            var sut = new PaymentController(paymentServiceMock.Object);
+            var sut = new PaymentController(paymentServiceMock.Object, _loggerMock.Object);
 
             var result = await sut.Delete(existingPaymentId.ToString());
 
@@ -61,7 +64,7 @@ namespace PaymentsSystemExample.UnitTests.PaymentControllerTests
         public async Task AndTheIdIsIncorrect_ThenReturnBadRequest()
         {
             var nonGuidId = "testtesttest";
-            var sut = new PaymentController(null);
+            var sut = new PaymentController(null, _loggerMock.Object);
 
             var result = await sut.Delete(nonGuidId);
 

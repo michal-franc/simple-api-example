@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 using Moq;
 using Xunit;
@@ -14,13 +15,15 @@ namespace PaymentsSystemExample.UnitTests.PaymentControllerTests
 {
     public class PaymentControllerTests_WhenCallingGet
     {
+        Mock<ILogger<PaymentController>> _loggerMock = new Mock<ILogger<PaymentController>>(); 
+
         [Fact]
         public async Task AndThereIsExeption_ThenReturn500()
         {
             var paymentServiceMock = new Mock<IPaymentService>();
             paymentServiceMock.Setup(x => x.GetPayment(It.IsAny<Guid>())).ThrowsAsync(new Exception());
 
-            var sut = new PaymentController(paymentServiceMock.Object);
+            var sut = new PaymentController(paymentServiceMock.Object, _loggerMock.Object);
 
             var result = await sut.Get(Guid.NewGuid().ToString());
 
@@ -35,7 +38,7 @@ namespace PaymentsSystemExample.UnitTests.PaymentControllerTests
         {
             var nonExistingPaymentId = Guid.NewGuid();
             var paymentServiceMock = new Mock<IPaymentService>();
-            var sut = new PaymentController(paymentServiceMock.Object);
+            var sut = new PaymentController(paymentServiceMock.Object, _loggerMock.Object);
 
             var result = await sut.Get(nonExistingPaymentId.ToString());
 
@@ -48,7 +51,7 @@ namespace PaymentsSystemExample.UnitTests.PaymentControllerTests
             var existingPaymentId = Guid.NewGuid();
             var paymentServiceMock = new Mock<IPaymentService>();
             paymentServiceMock.Setup(x => x.GetPayment(existingPaymentId)).ReturnsAsync(new Payment { Id = existingPaymentId });
-            var sut = new PaymentController(paymentServiceMock.Object);
+            var sut = new PaymentController(paymentServiceMock.Object, _loggerMock.Object);
 
             var result = await sut.Get(existingPaymentId.ToString());
 
@@ -59,7 +62,7 @@ namespace PaymentsSystemExample.UnitTests.PaymentControllerTests
         public async Task AndTheIdIsIncorrect_ThenReturnBadRequest()
         {
             var nonGuidId = "testtesttest";
-            var sut = new PaymentController(null);
+            var sut = new PaymentController(null, _loggerMock.Object);
 
             var result = await sut.Get(nonGuidId);
 
