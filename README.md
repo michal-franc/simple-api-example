@@ -96,6 +96,7 @@ For multiple payments.
 - [LightBDD](https://github.com/LightBDD/LightBDD)
   - opinionated but interesting approach to write simple BDD styled tests.
   - this was my first time using this package and I will definitely get back to it.
+  - generates nice reports in html <img width="200px" heigth="100px" src="/images/light_bdd.png" />
 - [XUnit](https://github.com/xunit/xunit)
   - my standard go to **Unit Testing** framework.
   - It doesn't have more complex Assertions like **NUnit** but this can be solved by adding **FluentAssertions**
