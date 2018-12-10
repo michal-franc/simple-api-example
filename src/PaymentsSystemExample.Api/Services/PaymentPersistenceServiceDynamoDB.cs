@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using System.Globalization;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using Amazon;
 using Amazon.Auth;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
+using Amazon.DynamoDBv2.Model;
 using Newtonsoft.Json;
 
 namespace PaymentsSystemExample.Api.Services
@@ -38,6 +40,7 @@ namespace PaymentsSystemExample.Api.Services
     {
         protected AmazonDynamoDBClient _client;
         private JsonSerializerSettings _attributesSerializerSettings;
+        private const string TableName = "payments";
 
         public PaymentPersistenceServiceDynamoDB()
         {
@@ -60,7 +63,7 @@ namespace PaymentsSystemExample.Api.Services
         {
             try
             {
-                var table = Table.LoadTable(_client, "payments");
+                var table = Table.LoadTable(_client, TableName);
                 var batchWrite = table.CreateBatchWrite();
 
                 foreach(var payment in payments)
@@ -84,7 +87,7 @@ namespace PaymentsSystemExample.Api.Services
             {
                 var paymentList = new List<Payment>();
 
-                var table = Table.LoadTable(_client, "payments");
+                var table = Table.LoadTable(_client, TableName);
 
                 var filter = new ScanFilter();
                 filter.AddCondition("OrganisationId", ScanOperator.Equal, organisationId);
@@ -115,7 +118,7 @@ namespace PaymentsSystemExample.Api.Services
         {
             try
             {
-                var table = Table.LoadTable(_client, "payments");
+                var table = Table.LoadTable(_client, TableName);
                 var batchWrite = table.CreateBatchWrite();
 
                 foreach(var payment in payments)
@@ -137,11 +140,21 @@ namespace PaymentsSystemExample.Api.Services
         {
             try
             {
-                var table = Table.LoadTable(_client, "payments");
-                var result = await table.DeleteItemAsync(paymentId);
-                return result != null;
+                var request = new DeleteItemRequest
+                {
+                    TableName = TableName,
+                    Key = new Dictionary<string,AttributeValue>() { { "PaymentId", new AttributeValue { S = paymentId.ToString() } } },
+
+                    // required to check if actual item was deleted
+                    ReturnValues = new ReturnValue("ALL_OLD")
+                };
+
+                var result = await _client.DeleteItemAsync(request);
+
+                // With ALL_OLD document is returned in attributes - if it was deleted then attributes colleciton wont be empty
+                return result.Attributes.Count > 0;
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
                 throw;
             }
