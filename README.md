@@ -58,6 +58,11 @@ For one payment.
 ```
 make put-multi
 ```
+
+### How I approached this task?
+- started with empty repo nothing special here added .gitignore - de7cb9a2eb517b9d07c550e0f85f28447bbbceaa
+- added placeholder generate app from dotnet new - 773cd35a1e66a030d19fab9a58d52b30cb871458
+- added unit test folder - c9854e4cb6bb25cd52fcccfc212be9126d44b74c
 For multiple payments.
 
 - TODO: dont forget to prepars the code with static analysis code checkes like stylecop
