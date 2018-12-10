@@ -19,6 +19,7 @@ namespace PaymentsSystemExample.Api
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .UseUrls("http://0.0.0.0:5000")
                 .ConfigureLogging((ctx, logging) => 
                 {
                     logging.AddConsole();
