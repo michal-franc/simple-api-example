@@ -11,6 +11,7 @@ start-docker: dynamodb
 	sleep 2
 
 start-local: dynamodb
+	dotnet build src/PaymentsSystemExample.Api/PaymentsSystemExample.Api.csproj
 	dotnet run --project src/PaymentsSystemExample.Api/PaymentsSystemExample.Api.csproj
 
 stop:	
