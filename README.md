@@ -1,8 +1,9 @@
 Table of Contents
 =================
 
-  * [Summary:](#summary)
-  * [Required to Run:](#required-to-run)
+* [Table of Contents](#table-of-contents)
+  * [Summary](#summary)
+  * [Required to Run](#required-to-run)
     * [Optional](#optional)
   * [How to run?](#how-to-run)
   * [How to stop and cleanup?](#how-to-stop-and-cleanup)
@@ -11,8 +12,14 @@ Table of Contents
   * [How I approached this task?](#how-i-approached-this-task)
   * [.NET open source packages used in the project:](#net-open-source-packages-used-in-the-project)
   * [Why I picked up DynamoDB?](#why-i-picked-up-dynamodb)
+    * [RDBSM](#rdbsm)
+    * [DynamoDB](#dynamodb)
+    * [MongoDB](#mongodb)
+   * [Other Notes](#other-notes)
+   * [Things I would do with more time](#things-i-would-do-with-more-time)
+   * [System I would build given 'infinite' amount of time and resources](#system-i-would-build-given-infinite-amount-of-time-and-resources)
 
-*Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)*
+Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
 ### Summary
 
@@ -36,6 +43,8 @@ Payments system API sample using [Form3 API](http://api-docs.form3.tech/) as dom
   - it runs unit tests whenever a file is changed
 
 ### How to run?
+In the main folder run
+
 ```
 make example
 ```
@@ -45,13 +54,12 @@ This command:
 - starts dynamodb through localstack
 - runs a script to create payments table
 - puts single payment
-- puts multi payment
+- puts multiple payments
 - list payments
 - get payment
 - deletes payment
-- cleans up running container
+- cleans up running containers
 
-Go to main folder and
 ```
 make start-local
 ```
@@ -61,7 +69,7 @@ This command:
 - starts application on port **5000** for http and **5001** for https
 
 ### How to stop and cleanup?
-Go to main folder and
+In the main folder run
 ```
 make stop
 ```
@@ -70,7 +78,7 @@ This command:
 
 ### How to run tests?
 
-Go to main folder and
+In the main folder run
 ```
 make tests
 ```
@@ -82,7 +90,7 @@ This command:
 - stops localstack with dynamodb
 
 ### How to populate DynamoDB?
-Go to main folder and
+In the main folder run
 ```
 make put-single
 ```
@@ -108,6 +116,9 @@ For multiple payments.
 - Refactorization Clean Up.
 - Adding more integration tests - fixing bugs along the way with unit tests to cover them.
 - Creating simple implementation of Domain validation using FluentValidation.
+- Added simple Logging and configuration injection for DynamoDB host
+- Added Dockerfile and linked through docker-compose to localstack
+  - link is deprecated but I wanted to keep it simple without my own network stac
 
 ### .NET open source packages used in the project:
 - [LightBDD](https://github.com/LightBDD/LightBDD)
