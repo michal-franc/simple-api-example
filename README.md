@@ -195,7 +195,7 @@ For multiple payments.
   - Ideally i would call the attributes 'ExternalPayment' and our main object InternalPayment - or figure out a different terminilogoy on how to differentatie beetwen them - int he form3 api reference i found that you fetch the payment using guid id not the 'integer' or stirng one 
 
 ### Things I would do with more time
-- [ ] make example by dockerizing
+- [x] make example by dockerizing
 - [ ] add diagram for the 'better' architecture with description
 - [ ] add validator unit tests examples
 - [x] add license file
