@@ -22,7 +22,9 @@ Payments system API sample using [Form3 API](http://api-docs.form3.tech/) as dom
 - code was written on Linux Mint using I3wm and vscode + cli scripts
 
 ### Required to Run
-- [.net code sdk 2.1](https://dotnet.microsoft.com/download)
+- Linux :)
+  - it is using make to run and integrate everything
+- [.net core sdk 2.1+](https://dotnet.microsoft.com/download)
 - [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
   - to create dynamodb on localstack
 - [docker](https://docs.docker.com/install/linux/docker-ce/binaries/#prerequisites) 
@@ -34,15 +36,29 @@ Payments system API sample using [Form3 API](http://api-docs.form3.tech/) as dom
   - it runs unit tests whenever a file is changed
 
 ### How to run?
+```
+make example
+```
+This command:
+- builds docker image
+- starts the app
+- starts dynamodb through localstack
+- runs a script to create payments table
+- puts single payment
+- puts multi payment
+- list payments
+- get payment
+- deletes payment
+- cleans up running container
 
 Go to main folder and
 ```
-make start
+make start-local
 ```
 This command:
 - starts docker composed [localstack](https://github.com/localstack/localstack) in detached mode with stubbed **DynamoDB**.
 - runs a script to create **payments** table on localstack DynamoDB
-- starts dotnet application on port **5000** for http and **5001** for https
+- starts application on port **5000** for http and **5001** for https
 
 ### How to stop and cleanup?
 Go to main folder and
@@ -50,12 +66,13 @@ Go to main folder and
 make stop
 ```
 This command:
-- removes localstack and cleans up images
+- removes localstack and the app
 
 ### How to run tests?
+
 Go to main folder and
 ```
-make all-tests
+make tests
 ```
 
 This command:
@@ -178,6 +195,7 @@ For multiple payments.
   - Ideally i would call the attributes 'ExternalPayment' and our main object InternalPayment - or figure out a different terminilogoy on how to differentatie beetwen them - int he form3 api reference i found that you fetch the payment using guid id not the 'integer' or stirng one 
 
 ### Things I would do with more time
+- [ ] make example by dockerizing
 - [ ] add diagram for the 'better' architecture with description
 - [ ] add validator unit tests examples
 - [x] add license file
