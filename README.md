@@ -196,6 +196,7 @@ For multiple payments.
 
 ### Things I would do with more time
 - [x] make example by dockerizing
+  - [ ] leverage docker layer cache to not rebuild Domain project everytime
 - [ ] add diagram for the 'better' architecture with description
 - [ ] add validator unit tests examples
 - [x] add license file
